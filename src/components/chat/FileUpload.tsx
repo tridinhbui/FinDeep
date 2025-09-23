@@ -219,23 +219,23 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, disabled =
         )}
       </button>
 
-      {/* Drag and Drop Overlay */}
+      {/* Drag and Drop Overlay - Only show when actually dragging files */}
       {isDragOver && (
         <div
-          className="fixed inset-0 bg-accent/10 backdrop-blur-sm z-50 flex items-center justify-center"
+          className="absolute inset-0 bg-accent/10 backdrop-blur-sm z-50 flex items-center justify-center rounded-xl"
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <div className="bg-card-gradient border-2 border-dashed border-accent rounded-2xl p-12 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
-              <svg className="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-card-gradient border-2 border-dashed border-accent rounded-2xl p-8 text-center">
+            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-accent/20 flex items-center justify-center">
+              <svg className="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-dark-text mb-2">Drop files here</h3>
-            <p className="text-dark-text-secondary text-sm">
-              Supported formats: PDF, CSV, Markdown, HTML, Text, JSON
+            <h3 className="text-sm font-semibold text-dark-text mb-1">Drop files here</h3>
+            <p className="text-dark-text-secondary text-xs">
+              PDF, CSV, Markdown, HTML, Text, JSON
             </p>
           </div>
         </div>

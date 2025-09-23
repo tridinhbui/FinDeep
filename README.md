@@ -5,6 +5,8 @@ FinDeep is a modern web application that provides AI-powered financial analysis 
 ## 🚀 Features
 
 - **AI-Powered Financial Analysis**: Get intelligent insights from OpenAI GPT or Anthropic Claude
+- **User Authentication**: Secure registration and login with unique user accounts
+- **Chat History Persistence**: All conversations saved to MongoDB database
 - **Multi-User API Key Management**: Each user can connect their own API keys
 - **File Upload Support**: Upload financial documents for analysis
 - **Modern UI/UX**: Beautiful dark theme with glassmorphism effects
@@ -15,10 +17,13 @@ FinDeep is a modern web application that provides AI-powered financial analysis 
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 18, TypeScript, Tailwind CSS
+- **Backend**: Node.js, Express.js, MongoDB
 - **AI Integration**: OpenAI GPT-3.5-turbo, Anthropic Claude
+- **Authentication**: JWT tokens with bcrypt password hashing
+- **Database**: MongoDB with Mongoose ODM
 - **Build Tool**: Create React App
 - **Styling**: Tailwind CSS with custom dark theme
-- **State Management**: React Hooks
+- **State Management**: React Hooks with Context API
 
 ## �� Prerequisites
 
@@ -26,6 +31,7 @@ Before running FinDeep, make sure you have:
 
 - **Node.js** (version 16 or higher)
 - **npm** or **yarn** package manager
+- **MongoDB** (local installation or MongoDB Atlas account)
 - **OpenAI API Key** or **Anthropic Claude API Key** (optional - demo mode available)
 
 ## 🚀 Quick Start
@@ -40,14 +46,24 @@ cd FinDeep
 ### 2. Install Dependencies
 
 ```bash
+# Install frontend dependencies
 npm install
+
+# Install backend dependencies
+cd backend
+npm install
+cd ..
 ```
 
 ### 3. Environment Configuration
 
+#### Frontend Environment
 Create a `.env` file in the root directory:
 
 ```bash
+# Backend API URL
+REACT_APP_BACKEND_URL=http://localhost:5000/api
+
 # AI Configuration
 REACT_APP_AI_PROVIDER=openai
 
@@ -63,13 +79,41 @@ REACT_APP_OPENAI_API_URL=https://api.openai.com/v1
 REACT_APP_DEBUG=true
 ```
 
-### 4. Start the Development Server
+#### Backend Environment
+Create a `.env` file in the `backend` directory:
 
 ```bash
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+FRONTEND_URL=http://localhost:3000
+
+# Database
+MONGODB_URI=mongodb://localhost:27017/findeep
+# For MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net/findeep
+
+# JWT Secret (generate a strong secret key)
+JWT_SECRET=your-super-secret-jwt-key-here
+
+# AI API Keys (optional - for global fallback)
+OPENAI_API_KEY=your-openai-api-key-here
+CLAUDE_API_KEY=your-claude-api-key-here
+```
+
+### 4. Start the Development Servers
+
+```bash
+# Start the backend server (in one terminal)
+cd backend
+npm run dev
+
+# Start the frontend server (in another terminal)
+cd ..
 npm start
 ```
 
-The application will open at `http://localhost:3000`
+- **Frontend**: `http://localhost:3000`
+- **Backend API**: `http://localhost:5000`
 
 ## 🔑 API Key Setup
 

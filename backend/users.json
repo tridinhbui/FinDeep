@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1758653738791",
+    "username": "john_doe",
+    "email": "john@findeep.com",
+    "name": "John Doe",
+    "password": "$2b$10$B2l.tqWeKW6cAa8OUozqpeAr7iVAvwxR/X2oDlfWjUbzMBUAUXIT.",
+    "createdAt": "2025-09-23T18:55:38.791Z"
+  },
+  {
+    "id": "1758654620563",
+    "username": "Hi",
+    "email": "hi@gmail.com",
+    "name": "Hi",
+    "password": "$2b$10$EQqtwLPDfboTLdZkMc3qRu4l9JwncDAh1KkT78XLE7Kz9ErAwcr5e",
+    "createdAt": "2025-09-23T19:10:20.563Z"
+  },
+  {
+    "id": "1758654929259",
+    "username": "testuser",
+    "email": "test@findeep.com",
+    "name": "Test User",
+    "password": "$2b$10$w3lVLWamHX48evMzQ39e.O8cuTQXIhH52bFXqVaN.xLDHJoHiCDW2",
+    "createdAt": "2025-09-23T19:15:29.259Z"
+  },
+  {
+    "id": "1758655258139",
+    "username": "newuser",
+    "email": "new@findeep.com",
+    "name": "New User",
+    "password": "$2b$10$9yQwDf7scN8W2JqYHJy6E.96o5HTbJSW5RNVWbQYZkCxZeg6LgQhW",
+    "createdAt": "2025-09-23T19:20:58.139Z"
+  },
+  {
+    "id": "1758655308143",
+    "username": "HoHo",
+    "email": "ho@gmail.com",
+    "name": "HoHo",
+    "password": "$2b$10$55wFCbbqCL6ZfixXq3xRSeioeHtnNUrbcuIMl3mxAQYzqJFLgDe7K",
+    "createdAt": "2025-09-23T19:21:48.143Z"
+  },
+  {
+    "id": "1758656039525",
+    "username": "HaHa",
+    "email": "ha@gmail.com",
+    "name": "HaHa",
+    "password": "$2b$10$ey7iTqJxKEjpQeqa4tNfwuWiGxZo7PHGHytFcYqsjA2t3NCixez9.",
+    "createdAt": "2025-09-23T19:33:59.525Z"
+  }
+]

@@ -12,8 +12,8 @@ import { FileUpload } from "../../components/chat/FileUpload";
 import { ApiKeySettings } from "../../components/settings/ApiKeySettings";
 import {
   saveViewerState,
-  loadViewerState,
   generateTabId,
+  clearViewerState,
 } from "../../lib/storage/viewerState";
 import { apiService } from "../../services/api";
 
@@ -37,208 +37,23 @@ const getAttachmentIcon = (kind: string): string => {
   }
 };
 
-// Demo data - in production this would come from your API
-const DEMO_MESSAGES: ChatMessage[] = [
-  {
-    id: "1",
-    role: "user",
-    content:
-      "Can you analyze our Q3 financial performance and show me the key documents?",
-  },
-  {
-    id: "2",
-    role: "assistant",
-    content:
-      "I've analyzed your Q3 financial performance. Here are the key findings and supporting documents:\n\n**Key Highlights:**\n- Revenue increased 12% quarter-over-quarter\n- Operating margin improved to 18.5%\n- Cash flow remained strong at $2.3M\n\nI've attached the detailed financial report, KPI dashboard, and variance analysis memo for your review.",
-    attachments: [
-      {
-        id: "att-1",
-        title: "Q3 Financial Report",
-        kind: "pdf",
-        mime: "application/pdf",
-        url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-        preview:
-          "Complete quarterly financial report with P&L, balance sheet, and cash flow statements",
-      },
-      {
-        id: "att-2",
-        title: "KPI Dashboard",
-        kind: "table",
-        mime: "application/json",
-        data: {
-          columns: ["Metric", "Q2 2023", "Q3 2023", "Change", "Target"],
-          rows: [
-            ["Revenue", "$12.5M", "$14.0M", "+12%", "$13.5M"],
-            ["Gross Margin", "65%", "67%", "+2pp", "66%"],
-            ["Operating Margin", "16%", "18.5%", "+2.5pp", "18%"],
-            ["EBITDA", "$2.1M", "$2.6M", "+24%", "$2.4M"],
-            ["Cash Flow", "$1.8M", "$2.3M", "+28%", "$2.0M"],
-            ["Customer Acquisition Cost", "$150", "$135", "-10%", "$140"],
-            ["Lifetime Value", "$2,400", "$2,650", "+10%", "$2,500"],
-          ],
-        },
-        preview:
-          "Key performance indicators for Q3 with targets and variance analysis",
-      },
-      {
-        id: "att-3",
-        title: "Variance Analysis Memo",
-        kind: "markdown",
-        mime: "text/markdown",
-        content: `# Q3 2023 Variance Analysis
-
-## Executive Summary
-Q3 performance exceeded expectations across all major financial metrics. The 12% revenue growth was driven primarily by increased customer acquisition and improved retention rates.
-
-## Revenue Analysis
-- **Actual**: $14.0M vs **Target**: $13.5M (+3.7% variance)
-- **Drivers**: 
-  - New customer acquisition: +15% vs Q2
-  - Average revenue per user: +8% due to premium tier adoption
-  - Churn rate: Improved to 3.2% (target: 4.0%)
-
-## Cost Management
-- **Operating expenses**: $11.4M vs budget $11.8M
-- **Key savings**:
-  - Marketing efficiency: CAC reduced by 10%
-  - Infrastructure optimization: Cloud costs down 8%
-  - Process automation: Admin costs reduced 12%
-
-## Risk Factors
-- Supply chain costs increased 5% due to inflation
-- Competitive pressure in core markets
-- Regulatory changes in EU market
-
-## Recommendations
-1. Continue premium tier expansion strategy
-2. Invest in customer success to maintain low churn
-3. Monitor supply chain costs closely
-4. Prepare for potential regulatory changes
-
-*Analysis prepared by Finance Team - October 2023*`,
-        preview:
-          "Detailed variance analysis explaining Q3 performance vs targets and budget",
-      },
-    ],
-  },
-  {
-    id: "3",
-    role: "user",
-    content: "Show me more financial documents and reports",
-  },
-  {
-    id: "4",
-    role: "assistant",
-    content:
-      "Here are additional financial documents and reports for your review:\n\n**Available Documents:**\n- Annual Budget Planning Guide\n- Cash Flow Forecast Model\n- Investment Analysis Report\n- Compliance Audit Results\n- Market Research Summary\n\nClick on any document below to view it in detail.",
-    attachments: [
-      {
-        id: "att-4",
-        title: "Annual Budget Planning Guide",
-        kind: "pdf",
-        mime: "application/pdf",
-        url: "https://www.africau.edu/images/default/sample.pdf",
-        preview:
-          "Comprehensive guide for annual budget planning and forecasting processes",
-      },
-      {
-        id: "att-5",
-        title: "Cash Flow Forecast Model",
-        kind: "pdf",
-        mime: "application/pdf",
-        url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-        preview: "12-month cash flow projection model with scenario analysis",
-      },
-      {
-        id: "att-6",
-        title: "Investment Analysis Report",
-        kind: "pdf",
-        mime: "application/pdf",
-        url: "https://www.africau.edu/images/default/sample.pdf",
-        preview:
-          "Detailed analysis of potential investment opportunities and ROI projections",
-      },
-      {
-        id: "att-7",
-        title: "Compliance Audit Results",
-        kind: "table",
-        mime: "application/json",
-        data: {
-          columns: ["Area", "Status", "Score", "Issues", "Action Required"],
-          rows: [
-            ["Financial Controls", "Compliant", "95%", "0", "None"],
-            ["Data Security", "Compliant", "92%", "1", "Update encryption"],
-            ["Regulatory Reporting", "Compliant", "98%", "0", "None"],
-            ["Risk Management", "Minor Issues", "87%", "2", "Review policies"],
-            ["Internal Audit", "Compliant", "94%", "0", "None"],
-            ["Documentation", "Minor Issues", "89%", "1", "Update procedures"],
-          ],
-        },
-        preview: "Compliance audit results across all business areas",
-      },
-      {
-        id: "att-8",
-        title: "Market Research Summary",
-        kind: "markdown",
-        mime: "text/markdown",
-        content: `# Market Research Summary - Q3 2023
-
-## Market Overview
-The financial services market continues to show strong growth with increasing demand for digital solutions and AI-powered analytics.
-
-## Key Findings
-
-### Market Size & Growth
-- **Total Addressable Market**: $2.8T (up 8% YoY)
-- **Serviceable Market**: $450B (up 12% YoY)
-- **Growth Rate**: 15% CAGR projected through 2026
-
-### Competitive Landscape
-- **Market Leaders**: Traditional banks (45% share)
-- **Fintech Disruption**: 23% market share (up from 18% last year)
-- **Emerging Players**: AI-first companies gaining traction
-
-### Customer Trends
-- **Digital Adoption**: 78% prefer digital channels
-- **AI Expectations**: 65% expect AI-powered insights
-- **Security Concerns**: 89% prioritize data protection
-
-## Opportunities
-1. **AI-Powered Analytics**: High demand for predictive insights
-2. **Mobile-First Solutions**: Growing mobile user base
-3. **Regulatory Technology**: Compliance automation needs
-4. **Sustainable Finance**: ESG investment growth
-
-## Recommendations
-- Invest in AI/ML capabilities
-- Enhance mobile experience
-- Develop compliance automation tools
-- Explore sustainable finance products
-
-*Research conducted by Market Intelligence Team - October 2023*`,
-        preview: "Comprehensive market research and competitive analysis",
-      },
-      {
-        id: "att-9",
-        title: "Financial Dashboard Data",
-        kind: "csv",
-        mime: "text/csv",
-        url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-        preview:
-          "Raw financial data export for dashboard analysis and reporting",
-      },
-    ],
-  },
-];
+// Welcome message - clean start for new conversations
+const WELCOME_MESSAGE: ChatMessage = {
+  id: "welcome",
+  role: "assistant",
+  content: `Welcome to FinDeep. How can I help you today?`,
+};
 
 interface ChatWithPreviewProps {
   user: { email: string; name: string };
   onLogout: () => void;
+  isAuthenticated?: boolean;
+  realUser?: any;
 }
 
-export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout }) => {
+export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout, isAuthenticated = false, realUser }) => {
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<ChatMessage[]>(DEMO_MESSAGES);
+  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [inputValue, setInputValue] = useState("");
   const [pendingAttachments, setPendingAttachments] = useState<Attachment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -252,11 +67,13 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
 
   // Load viewer state from session storage on mount
   useEffect(() => {
-    const savedState = loadViewerState();
-    if (savedState) {
-      setViewerState(savedState);
-      setIsViewerVisible(savedState.openDocs.length > 0);
-    }
+    // Clear any old demo files from previous sessions
+    clearViewerState();
+    setViewerState({
+      openDocs: [],
+      activeTabId: null,
+    });
+    setIsViewerVisible(false);
   }, []);
 
   // Save viewer state to session storage whenever it changes
@@ -381,6 +198,17 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
     setPendingAttachments((prev) => [...prev, ...attachments]);
   };
 
+  const handleClearChat = () => {
+    setMessages([WELCOME_MESSAGE]);
+    setViewerState({
+      openDocs: [],
+      activeTabId: null,
+    });
+    setIsViewerVisible(false);
+    // Clear the viewer state from session storage
+    clearViewerState();
+  };
+
   return (
     <div className="flex h-screen bg-gradient-to-br from-dark-bg to-dark-surface text-dark-text">
       {/* Chat Panel */}
@@ -399,6 +227,15 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
           </div>
           
           <div className="flex items-center gap-3">
+            <button
+              onClick={handleClearChat}
+              className="p-3 rounded-xl bg-dark-surface border border-dark-border hover:bg-dark-surface-hover hover:border-accent/50 hover:shadow-glow transition-all duration-300"
+              title="Clear Chat & Files"
+            >
+              <svg className="w-5 h-5 text-dark-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
             <button
               onClick={() => setShowApiSettings(true)}
               className="p-3 rounded-xl bg-dark-surface border border-dark-border hover:bg-dark-surface-hover hover:border-accent/50 hover:shadow-glow transition-all duration-300"
@@ -450,25 +287,23 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
                 <div className="p-2">
                   <div className="px-3 py-2 text-sm text-dark-text-muted border-b border-dark-border">
                     {user.email}
-                    {user.email === 'demo@findeep.com' && (
+                    {!isAuthenticated ? (
                       <span className="ml-2 text-xs bg-accent/20 text-accent px-2 py-0.5 rounded-full">
                         Demo
                       </span>
+                    ) : (
+                      <span className="ml-2 text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">
+                        Authenticated
+                      </span>
                     )}
                   </div>
-                  {user.email === 'demo@findeep.com' ? (
+                  {!isAuthenticated ? (
                     <button
-                      onClick={() => navigate('/login')}
-                      className="w-full text-left px-3 py-2 text-sm text-dark-text hover:bg-dark-surface-hover rounded-lg transition-colors flex items-center gap-2"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                      </svg>
-                      Login to Account
-                    </button>
-                  ) : (
-                    <button
-                      onClick={onLogout}
+                      onClick={() => {
+                        // Clear any demo session data and redirect to login
+                        localStorage.removeItem('findeep-demo-session');
+                        navigate('/login');
+                      }}
                       className="w-full text-left px-3 py-2 text-sm text-dark-text hover:bg-dark-surface-hover rounded-lg transition-colors flex items-center gap-2"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -476,6 +311,32 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
                       </svg>
                       Sign Out
                     </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => navigate('/profile')}
+                        className="w-full text-left px-3 py-2 text-sm text-dark-text hover:bg-dark-surface-hover rounded-lg transition-colors flex items-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Profile Settings
+                      </button>
+                      <button
+                        onClick={() => {
+                          // Navigate immediately to prevent demo user flash
+                          navigate('/login');
+                          // Clear auth state after navigation
+                          onLogout();
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm text-dark-text hover:bg-dark-surface-hover rounded-lg transition-colors flex items-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Sign Out
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
@@ -535,11 +396,15 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Ask about your financial data..."
+                placeholder="Ask me anything about your financial data..."
                 className="flex-1 px-4 py-3 bg-dark-surface border border-dark-border rounded-xl focus:outline-none focus:border-accent focus:shadow-glow transition-all duration-300 text-dark-text placeholder-dark-text-muted"
                 disabled={isLoading}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => e.preventDefault()}
               />
-              <FileUpload onFileUpload={handleFileUpload} disabled={isLoading} />
+              <div className="relative">
+                <FileUpload onFileUpload={handleFileUpload} disabled={isLoading} />
+              </div>
             </div>
             <button
               type="submit"

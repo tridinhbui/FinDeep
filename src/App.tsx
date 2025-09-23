@@ -1,45 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ChatWithPreview } from "./pages/chat";
-import { LoginPage } from "./pages/auth/LoginPage";
+import { NewLoginPage } from "./pages/auth/NewLoginPage";
 import "./App.css";
 
-interface User {
+// Demo user interface for backward compatibility
+interface DemoUser {
   email: string;
   name: string;
 }
 
-function App() {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Check if user is logged in
-    const savedUser = localStorage.getItem('findeep-user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Error parsing saved user:', error);
-        localStorage.removeItem('findeep-user');
-      }
-    } else {
-      // Create a default demo user if no user is logged in
-      setUser({
-        email: 'demo@findeep.com',
-        name: 'Demo User'
-      });
-    }
-    setIsLoading(false);
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('findeep-user');
-    setUser({
-      email: 'demo@findeep.com',
-      name: 'Demo User'
-    });
-  };
+const AppRoutes: React.FC = () => {
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
 
   if (isLoading) {
     return (
@@ -54,31 +27,53 @@ function App() {
     );
   }
 
+  // Create demo user for backward compatibility
+  const demoUser: DemoUser = {
+    email: 'demo@findeep.com',
+    name: 'Demo User'
+  };
+
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route 
-            path="/login" 
-            element={
-              <LoginPage />
-            } 
+    <Routes>
+      <Route 
+        path="/login" 
+        element={
+          isAuthenticated ? <Navigate to="/chat" replace /> : <NewLoginPage />
+        } 
+      />
+      <Route 
+        path="/chat" 
+        element={
+          <ChatWithPreview 
+            user={user ? {
+              email: user.email,
+              name: user.name
+            } : demoUser} 
+            onLogout={logout} 
+            isAuthenticated={isAuthenticated}
+            realUser={user}
           />
-          <Route 
-            path="/chat" 
-            element={
-              <ChatWithPreview user={user!} onLogout={handleLogout} />
-            } 
-          />
-          <Route 
-            path="/" 
-            element={
-              <Navigate to="/chat" replace />
-            } 
-          />
-        </Routes>
-      </div>
-    </Router>
+        } 
+      />
+      <Route 
+        path="/" 
+        element={
+          <Navigate to="/chat" replace />
+        } 
+      />
+    </Routes>
+  );
+};
+
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <div className="App">
+          <AppRoutes />
+        </div>
+      </Router>
+    </AuthProvider>
   );
 }
 
