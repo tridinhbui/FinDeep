@@ -10,7 +10,8 @@ FinDeep is a modern web application that provides AI-powered financial analysis 
 - **Chat History Persistence**: All conversations saved to database
 - **Multi-User API Key Management**: Each user can connect their own API keys
 - **File Upload Support**: Upload financial documents for analysis (PDF, CSV, Markdown, Text, HTML, JSON)
-- **Modern UI/UX**: Clean white-black theme with dark/light mode toggle
+- **Modern UI/UX**: Clean white-black theme with intelligent dark/light mode toggle
+- **Simplified File Upload**: Clean attachment chips without cluttered messages
 - **Real-time Chat Interface**: Interactive conversation with AI financial advisor
 - **Document Viewer**: View and analyze uploaded financial documents
 - **Demo Mode**: Works without API keys for testing
@@ -23,8 +24,9 @@ FinDeep is a modern web application that provides AI-powered financial analysis 
 - **Authentication**: JWT tokens with bcrypt password hashing, Google OAuth
 - **Database**: JSON file storage (easily upgradeable to MongoDB)
 - **Build Tool**: Create React App
-- **Styling**: Tailwind CSS with clean white-black theme
-- **State Management**: React Hooks with Context API
+- **Styling**: Tailwind CSS with intelligent theme system (light/dark mode)
+- **State Management**: React Hooks with Context API (Auth, Theme)
+- **Theme System**: CSS variables with smooth transitions and persistent preferences
 
 ## �� Prerequisites
 
@@ -156,7 +158,8 @@ Each user can now use their own API keys without affecting others.
 ### Upload Documents
 1. **Click the paperclip icon** (📎) next to the chat input
 2. **Select financial documents** (PDF, CSV, etc.)
-3. **Ask questions** about your uploaded files
+3. **Files appear as clean attachment chips** - no cluttered messages
+4. **Ask questions** about your uploaded files
 
 ### Example Questions
 
@@ -169,19 +172,42 @@ Each user can now use their own API keys without affecting others.
 
 ### ✅ **Implemented & Working:**
 - **User Authentication**: Sign up, login, logout with persistent sessions
-- **Google OAuth**: Sign in with Google accounts
+- **Google OAuth**: Sign in with Google accounts (email-based login)
 - **AI Chat Interface**: Real-time conversation with OpenAI/Claude
 - **File Upload**: Support for PDF, CSV, Markdown, Text, HTML, JSON files
+- **Simplified File Display**: Clean attachment chips without cluttered messages
 - **Document Viewer**: View and analyze uploaded documents
-- **Settings Panel**: Theme toggle (light/dark mode), API key management
-- **Clean UI**: White-black theme matching login page design
+- **Intelligent Theme System**: Light/dark mode toggle with persistent preferences
+- **Settings Panel**: Theme toggle, API key management
+- **Clean UI**: Professional white-black theme with smooth transitions
 - **Demo Mode**: Works without API keys for testing
 - **User-Specific API Keys**: Each user can use their own API keys
+- **Responsive Design**: Works seamlessly on desktop and mobile
 
 ### 🔄 **Ready for Enhancement:**
 - **MongoDB Integration**: Currently uses JSON file storage, easily upgradeable
 - **Chat History**: Basic persistence, ready for full database integration
 - **Advanced Analytics**: Ready for financial data analysis features
+
+## 🆕 **Recent Improvements**
+
+### **Theme System Enhancement**
+- ✅ **Intelligent Dark/Light Mode**: Smooth transitions with persistent user preferences
+- ✅ **CSS Variables**: Dynamic theming with proper contrast ratios
+- ✅ **Theme Toggle**: Compact toggle in chat interface header
+- ✅ **Persistent Storage**: Theme preference saved to localStorage
+
+### **File Upload Experience**
+- ✅ **Simplified Display**: Clean attachment chips without cluttered text messages
+- ✅ **Professional UI**: File type icons with clear "Click to view" indicators
+- ✅ **Better UX**: Files appear directly without unnecessary "I've uploaded" messages
+- ✅ **Smart Message Handling**: Support for text-only, file-only, or combined messages
+
+### **Authentication Improvements**
+- ✅ **Email-Based Login**: Changed from username to email for Google OAuth compatibility
+- ✅ **Input Field Visibility**: Fixed text color issues in login forms
+- ✅ **Google Sign-In Button**: Improved text visibility and styling
+- ✅ **Form Validation**: Better error handling and user feedback
 
 ## 📁 Project Structure
 
@@ -189,18 +215,28 @@ Each user can now use their own API keys without affecting others.
 FinDeep/
 ├── src/                    # Frontend React application
 │   ├── components/         # Reusable UI components
+│   │   ├── auth/          # Authentication components (GoogleAuth)
+│   │   ├── chat/          # Chat components (MessageItem, FileUpload)
+│   │   ├── settings/      # Settings components (ThemeToggle, SettingsPanel)
+│   │   └── viewer/        # Document viewer components
 │   ├── pages/             # Main application pages
-│   ├── contexts/          # React Context providers
+│   │   ├── auth/          # Login and registration pages
+│   │   └── chat/          # Main chat interface
+│   ├── contexts/          # React Context providers (Auth, Theme)
 │   ├── services/          # API and authentication services
-│   └── types/             # TypeScript type definitions
+│   ├── types/             # TypeScript type definitions
+│   └── lib/               # Utility libraries (viewer state management)
 ├── backend/               # Node.js backend server
 │   ├── server.js          # Main server file
+│   ├── persistent-server.js # Persistent data server
 │   ├── users.json         # User data storage
+│   ├── README.md          # Backend setup guide
 │   └── package.json       # Backend dependencies
 ├── public/                # Static assets
 ├── README.md              # This file
 ├── API_SETUP.md           # API configuration guide
 ├── GOOGLE_OAUTH_SETUP.md  # Google OAuth setup guide
+├── ENVIRONMENT_SETUP.md   # Environment configuration guide
 └── package.json           # Frontend dependencies
 ```
 
