@@ -27,7 +27,7 @@ export type Attachment =
 export type ChatMessage = {
   id: string;
   role: "user" | "assistant";
-  content: string; // assistant narrative / analysis
+  content?: string; // optional content (for attachment-only messages)
   attachments?: Attachment[]; // optional
 };
 

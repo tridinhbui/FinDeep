@@ -132,7 +132,11 @@ When users upload files, you can reference them in your analysis. Always provide
         `- ${att.title} (${att.kind}): ${att.preview || 'No preview available'}`
       ).join('\n');
       
-      currentMessage += `\n\nUser has uploaded the following files:\n${attachmentInfo}`;
+      if (currentMessage.trim()) {
+        currentMessage += `\n\nFiles attached:\n${attachmentInfo}`;
+      } else {
+        currentMessage = `Files attached:\n${attachmentInfo}`;
+      }
     }
 
     prompt += `Human: ${currentMessage}\n\nAssistant:`;
@@ -261,7 +265,7 @@ When users upload files, you can reference them in your analysis. Always provide
       request.conversation_history.forEach(msg => {
         messages.push({
           role: msg.role,
-          content: msg.content
+          content: msg.content || ""
         });
       });
     }
@@ -273,7 +277,11 @@ When users upload files, you can reference them in your analysis. Always provide
         `- ${att.title} (${att.kind}): ${att.preview || 'No preview available'}`
       ).join('\n');
       
-      currentMessage += `\n\nUser has uploaded the following files:\n${attachmentInfo}`;
+      if (currentMessage.trim()) {
+        currentMessage += `\n\nFiles attached:\n${attachmentInfo}`;
+      } else {
+        currentMessage = `Files attached:\n${attachmentInfo}`;
+      }
     }
 
     messages.push({
@@ -464,10 +472,10 @@ This forecast model provides a 12-month projection based on current trends and m
       attachments: attachments ? [
         {
           id: `demo-${Date.now()}-6`,
-          title: 'Your Uploaded Files',
+          title: 'Available Files',
           kind: 'text',
           mime: 'text/plain',
-          content: `You've uploaded ${attachments.length} file(s):\n\n${attachments.map(att => `• ${att.title} (${att.kind})`).join('\n')}\n\nI can analyze these documents and provide insights based on their content.`,
+          content: `Files available for analysis:\n\n${attachments.map(att => `• ${att.title} (${att.kind})`).join('\n')}\n\nI can analyze these documents and provide insights based on their content.`,
           preview: 'Summary of your uploaded files'
         }
       ] : []

@@ -94,17 +94,19 @@ export const MessageItem: React.FC<MessageItemProps> = ({
       `}
       >
         {/* Message Content */}
-        <div className="mb-3">
-          {message.content.split("\n").map((line, index) => (
-            <p key={index} className="mb-2 last:mb-0">
-              {line}
-            </p>
-          ))}
-        </div>
+        {message.content && (
+          <div className="mb-3">
+            {message.content.split("\n").map((line, index) => (
+              <p key={index} className="mb-2 last:mb-0">
+                {line}
+              </p>
+            ))}
+          </div>
+        )}
 
         {/* Attachments */}
         {message.attachments && message.attachments.length > 0 && (
-          <div className="space-y-3 mt-4 pt-4 border-t border-border dark:border-border-dark/30 theme-transition">
+          <div className={`space-y-3 ${message.content ? 'mt-4 pt-4 border-t border-border dark:border-border-dark/30 theme-transition' : ''}`}>
             <div className="flex items-center gap-2 text-xs text-text-muted dark:text-text-muted-dark theme-transition">
               <svg
                 className="w-4 h-4"

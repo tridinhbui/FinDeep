@@ -170,7 +170,7 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       role: "user",
-      content: inputValue.trim() || "I've uploaded some files for analysis.",
+      content: inputValue.trim() || undefined, // Only include content if user typed something
       attachments: pendingAttachments.length > 0 ? [...pendingAttachments] : undefined,
     };
 
@@ -182,7 +182,7 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
     try {
       // Call the AI API
       const response = await apiService.sendMessage({
-        message: userMessage.content,
+        message: userMessage.content || "",
         attachments: userMessage.attachments,
         conversation_history: messages,
         userEmail: user.email,
