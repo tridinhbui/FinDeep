@@ -1,20 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { CustomGoogleButton } from '../../components/auth/GoogleAuth';
+
+declare global {
+  interface Window {
+    google: any;
+  }
+}
 
 export const NewLoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login, register } = useAuth();
+  const { login, register, loginWithGoogle } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    username: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    name: '',
+    confirmPassword: ''
   });
+
+  // Check if Google services are loaded
+  useEffect(() => {
+    const checkGoogleServices = () => {
+      console.log('Checking Google services...');
+      console.log('window.google:', window.google);
+      console.log('REACT_APP_GOOGLE_CLIENT_ID:', process.env.REACT_APP_GOOGLE_CLIENT_ID);
+
+      if (window.google) {
+        console.log('Google services are loaded!');
+      } else {
+        console.log('Google services not loaded yet, retrying in 1 second...');
+        setTimeout(checkGoogleServices, 1000);
+      }
+    };
+
+    checkGoogleServices();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -22,7 +45,6 @@ export const NewLoginPage: React.FC = () => {
       ...prev,
       [name]: value
     }));
-    setError('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,61 +55,106 @@ export const NewLoginPage: React.FC = () => {
     try {
       if (isLogin) {
         await login(formData.email, formData.password);
-        navigate('/chat');
       } else {
-        // Registration validation
         if (formData.password !== formData.confirmPassword) {
           throw new Error('Passwords do not match');
         }
-        if (formData.password.length < 6) {
-          throw new Error('Password must be at least 6 characters');
-        }
-        if (!formData.username || !formData.email || !formData.name) {
-          throw new Error('All fields are required');
-        }
-
         await register({
-          username: formData.username,
+          username: formData.email,
           email: formData.email,
           password: formData.password,
-          name: formData.name,
+          name: formData.email.split('@')[0] // Use email prefix as name
         });
-        navigate('/chat');
       }
+      navigate('/chat');
     } catch (error: any) {
-      setError(error.message || 'An error occurred');
+      setError(error.message || 'Authentication failed');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    setError('');
+
+    try {
+      // Check if Google Client ID is configured
+      const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+      console.log('Google Client ID:', clientId); // Debug log
+      
+      if (!clientId || clientId === 'your-google-client-id-here') {
+        throw new Error('Google OAuth is not configured. Please set up your Google Client ID in the .env file.');
+      }
+
+      // Check if Google Identity Services is loaded
+      if (!window.google) {
+        throw new Error('Google services not loaded. Please refresh the page and try again.');
+      }
+
+      console.log('Google services loaded, initializing...'); // Debug log
+
+      // Initialize Google Identity Services with One-Tap
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: async (response: any) => {
+          console.log('Google callback received:', response); // Debug log
+          try {
+            // Use the existing loginWithGoogle function
+            await loginWithGoogle(response.credential);
+            navigate('/chat');
+          } catch (error: any) {
+            console.error('Google login error:', error); // Debug log
+            setError(error.message || 'Google login failed');
+          } finally {
+            setIsLoading(false);
+          }
+        },
+        auto_select: false,
+        cancel_on_tap_outside: true
+      });
+
+      // Use One-Tap Sign-In (works better on localhost)
+      window.google.accounts.id.prompt((notification: any) => {
+        console.log('Google prompt notification:', notification); // Debug log
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          setIsLoading(false);
+          if (notification.isNotDisplayed()) {
+            setError('Google sign-in was not displayed. Please try again or check your browser settings.');
+          }
+        }
+      });
+
+    } catch (error: any) {
+      console.error('Google OAuth error:', error); // Debug log
+      setError(error.message || 'Google login failed');
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-bg to-dark-surface flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-modern-gradient flex items-center justify-center shadow-glow">
-            <span className="text-white font-bold text-3xl">F</span>
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary flex items-center justify-center shadow-elegant">
+            <span className="text-white font-bold text-2xl">F</span>
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-accent to-accent-light bg-clip-text text-transparent">
-            FinDeep
-          </h1>
-          <p className="text-dark-text-secondary mt-2">
-            AI-Powered Financial Analysis
-          </p>
+          <h1 className="text-2xl font-bold text-black mb-2">FinDeep</h1>
+          <p className="text-gray-600">AI-Powered Financial Analysis</p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-card-gradient border border-dark-border rounded-2xl shadow-modern-lg p-8 backdrop-blur-sm">
+        <div className="bg-white border border-border rounded-2xl shadow-elegant p-8">
           {/* Toggle Buttons */}
-          <div className="flex mb-6 bg-dark-surface rounded-xl p-1">
+          <div className="flex mb-6 bg-secondary-light rounded-xl p-1">
             <button
               type="button"
               onClick={() => setIsLogin(true)}
-              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 ${
                 isLogin
-                  ? 'bg-modern-gradient text-white shadow-glow'
-                  : 'text-dark-text-secondary hover:text-dark-text'
+                  ? 'bg-white text-black shadow-subtle'
+                  : 'text-gray-500 hover:text-black'
               }`}
             >
               Sign In
@@ -95,10 +162,10 @@ export const NewLoginPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsLogin(false)}
-              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 ${
                 !isLogin
-                  ? 'bg-modern-gradient text-white shadow-glow'
-                  : 'text-dark-text-secondary hover:text-dark-text'
+                  ? 'bg-white text-black shadow-subtle'
+                  : 'text-gray-500 hover:text-black'
               }`}
             >
               Sign Up
@@ -107,127 +174,103 @@ export const NewLoginPage: React.FC = () => {
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-error/10 border border-error/20 rounded-xl text-error text-sm">
-              {error}
+            <div className="mb-4 p-3 bg-error/10 border border-error/20 rounded-lg">
+              <p className="text-error text-sm">{error}</p>
             </div>
           )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-dark-text mb-2">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-dark-surface border border-dark-border rounded-xl focus:outline-none focus:border-accent focus:shadow-glow transition-all duration-300 text-dark-text placeholder-dark-text-muted"
-                    placeholder="Enter your full name"
-                    required={!isLogin}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-dark-text mb-2">
-                    Username
-                  </label>
-                  <input
-                    type="text"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-dark-surface border border-dark-border rounded-xl focus:outline-none focus:border-accent focus:shadow-glow transition-all duration-300 text-dark-text placeholder-dark-text-muted"
-                    placeholder="Choose a username"
-                    required={!isLogin}
-                  />
-                </div>
-              </>
-            )}
-
+            
             <div>
-              <label className="block text-sm font-medium text-dark-text mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-black mb-2">
                 Email
               </label>
               <input
                 type="email"
+                id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-dark-surface border border-dark-border rounded-xl focus:outline-none focus:border-accent focus:shadow-glow transition-all duration-300 text-dark-text placeholder-dark-text-muted"
-                placeholder="Enter your email"
                 required
+                className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 text-black placeholder-gray-500"
+                placeholder="Enter your email"
               />
             </div>
-
+            
             <div>
-              <label className="block text-sm font-medium text-dark-text mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-black mb-2">
                 Password
               </label>
               <input
                 type="password"
+                id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-dark-surface border border-dark-border rounded-xl focus:outline-none focus:border-accent focus:shadow-glow transition-all duration-300 text-dark-text placeholder-dark-text-muted"
-                placeholder="Enter your password"
                 required
+                className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 text-black placeholder-gray-500"
+                placeholder="Enter your password"
               />
             </div>
-
+            
             {!isLogin && (
               <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-black mb-2">
                   Confirm Password
                 </label>
                 <input
                   type="password"
+                  id="confirmPassword"
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-dark-surface border border-dark-border rounded-xl focus:outline-none focus:border-accent focus:shadow-glow transition-all duration-300 text-dark-text placeholder-dark-text-muted"
-                  placeholder="Confirm your password"
                   required={!isLogin}
+                  className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 text-black placeholder-gray-500"
+                  placeholder="Confirm your password"
                 />
               </div>
             )}
-
+            
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-modern-gradient text-white rounded-xl hover:shadow-glow disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-medium flex items-center justify-center gap-2"
+              className="w-full py-3 bg-primary text-white rounded-xl hover:bg-accent-hover transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  {isLogin ? 'Signing In...' : 'Creating Account...'}
-                </>
-              ) : (
-                isLogin ? 'Sign In' : 'Create Account'
-              )}
+              {isLoading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
             </button>
           </form>
 
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+            </div>
+          </div>
+
+          {/* Google Sign-In */}
+          <CustomGoogleButton
+            onClick={handleGoogleLogin}
+            disabled={isLoading}
+            text={isLogin ? "Sign in with Google" : "Sign up with Google"}
+          />
+
           {/* Demo Login */}
-          <div className="mt-6 pt-6 border-t border-dark-border">
-            <p className="text-center text-sm text-dark-text-muted mb-3">
+          <div className="mt-6 pt-6 border-t border-border">
+            <p className="text-center text-gray-500 text-sm mb-3">
               Want to try without an account?
             </p>
             <button
+              type="button"
               onClick={() => navigate('/chat')}
-              className="w-full py-2 px-4 bg-dark-surface border border-dark-border rounded-xl hover:bg-dark-surface-hover transition-colors text-sm font-medium text-dark-text"
+              className="w-full py-2 text-primary border border-primary rounded-xl hover:bg-primary hover:text-white transition-all duration-300 font-medium"
             >
               Continue as Demo User
             </button>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="text-center mt-6 text-xs text-dark-text-muted">
-          <p>By continuing, you agree to our Terms of Service and Privacy Policy</p>
         </div>
       </div>
     </div>

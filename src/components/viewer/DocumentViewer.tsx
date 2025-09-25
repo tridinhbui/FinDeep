@@ -18,7 +18,7 @@ const PDFRenderer: React.FC<DocumentRendererProps> = ({ attachment }) => {
   return (
     <iframe
       src={attachment.url}
-      className="w-full h-full border-0"
+      className="w-full h-full border-0 bg-white"
       title={attachment.title}
       sandbox="allow-same-origin allow-scripts allow-forms"
     />
@@ -31,7 +31,7 @@ const CSVRenderer: React.FC<DocumentRendererProps> = ({ attachment }) => {
   return (
     <iframe
       src={attachment.url}
-      className="w-full h-full border-0"
+      className="w-full h-full border-0 bg-white"
       title={attachment.title}
       sandbox="allow-same-origin allow-scripts allow-forms"
     />
@@ -66,7 +66,7 @@ const TextRenderer: React.FC<DocumentRendererProps> = ({ attachment }) => {
   if (attachment.kind !== "text") return null;
 
   return (
-    <pre className="whitespace-pre-wrap p-4 h-full overflow-auto text-sm font-mono bg-dark-surface">
+    <pre className="whitespace-pre-wrap p-4 h-full overflow-auto text-sm font-mono bg-secondary-light text-text">
       {attachment.content}
     </pre>
   );
@@ -91,13 +91,13 @@ const TableRenderer: React.FC<DocumentRendererProps> = ({ attachment }) => {
 
   return (
     <div className="h-full overflow-auto">
-      <table className="w-full border-collapse border border-dark-border">
-        <thead className="bg-dark-surface sticky top-0">
+      <table className="w-full border-collapse border border-border">
+        <thead className="bg-secondary-light sticky top-0">
           <tr>
             {columns.map((column, index) => (
               <th
                 key={index}
-                className="border border-dark-border px-4 py-2 text-left font-semibold text-dark-text"
+                className="border border-border px-4 py-2 text-left font-semibold text-text"
               >
                 {column}
               </th>
@@ -106,11 +106,11 @@ const TableRenderer: React.FC<DocumentRendererProps> = ({ attachment }) => {
         </thead>
         <tbody>
           {rows.map((row, rowIndex) => (
-            <tr key={rowIndex} className="hover:bg-dark-surface/50">
+            <tr key={rowIndex} className="hover:bg-surface-hover">
               {row.map((cell, cellIndex) => (
                 <td
                   key={cellIndex}
-                  className="border border-dark-border px-4 py-2 text-dark-text-secondary"
+                  className="border border-border px-4 py-2 text-text-secondary"
                 >
                   {cell}
                 </td>
@@ -175,11 +175,11 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
 
   if (openDocs.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full bg-gradient-to-br from-dark-bg to-dark-surface border-l border-dark-border">
-        <div className="text-center text-dark-text-secondary animate-fade-in">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-accent/20 to-accent-light/20 flex items-center justify-center">
+      <div className="flex items-center justify-center h-full bg-white border-l border-border">
+        <div className="text-center text-text-secondary animate-fade-in">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center">
             <svg
-              className="w-10 h-10 text-accent"
+              className="w-10 h-10 text-primary"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -205,24 +205,24 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-dark-bg to-dark-surface border-l border-dark-border">
+    <div className="flex flex-col h-full bg-white border-l border-border">
       {/* Tab Bar */}
-      <div className="flex border-b border-dark-border bg-card-gradient backdrop-blur-sm">
+      <div className="flex border-b border-border bg-secondary-light">
         {openDocs.map((doc) => (
           <div
             key={doc.tabId}
             className={`
-              group flex items-center gap-3 px-4 py-3 border-r border-dark-border cursor-pointer
+              group flex items-center gap-3 px-4 py-3 border-r border-border cursor-pointer
               transition-all duration-300 min-w-0 flex-1 max-w-xs
               ${
                 activeTabId === doc.tabId
-                  ? "bg-gradient-to-r from-accent/10 to-accent-light/10 text-dark-text border-b-2 border-accent shadow-glow"
-                  : "text-dark-text-secondary hover:text-dark-text hover:bg-dark-surface-hover/50"
+                  ? "bg-primary/10 text-text border-b-2 border-primary"
+                  : "text-text-secondary hover:text-text hover:bg-surface-hover"
               }
             `}
             onClick={() => onActivate(doc.tabId)}
           >
-            <div className="flex-shrink-0 w-6 h-6 rounded-md bg-gradient-to-br from-accent/20 to-accent-light/20 flex items-center justify-center">
+            <div className="flex-shrink-0 w-6 h-6 rounded-md bg-primary/20 flex items-center justify-center">
               <span className="text-xs">
                 {getAttachmentIcon(doc.attachment.kind)}
               </span>
@@ -252,7 +252,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
         {activeDoc ? (
           <DocumentContent attachment={activeDoc.attachment} />
         ) : (
-          <div className="flex items-center justify-center h-full text-dark-text-secondary">
+          <div className="flex items-center justify-center h-full text-text-secondary">
             Select a document to view
           </div>
         )}

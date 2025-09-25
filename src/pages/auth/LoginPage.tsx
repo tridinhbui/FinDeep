@@ -1,270 +1,283 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+
+declare global {
+  interface Window {
+    google: any;
+  }
+}
 
 export const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  const { login, register, loginWithGoogle } = useAuth();
+  const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
 
-  // Add entrance animation
+  // Check if Google services are loaded
   useEffect(() => {
-    setIsAnimating(true);
+    const checkGoogleServices = () => {
+      if (window.google) {
+        console.log('Google services loaded successfully');
+      } else {
+        console.log('Google services not loaded yet, retrying...');
+        setTimeout(checkGoogleServices, 1000);
+      }
+    };
+
+    checkGoogleServices();
   }, []);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
     try {
-      // Simulate API call - replace with real authentication
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For demo purposes, accept any email/password
-      if (email && password) {
-        localStorage.setItem('findeep-user', JSON.stringify({ email, name: email.split('@')[0] }));
-        navigate('/chat');
+      if (isLogin) {
+        await login(formData.email, formData.password);
       } else {
-        setError('Please enter both email and password');
+        if (formData.password !== formData.confirmPassword) {
+          throw new Error('Passwords do not match');
+        }
+        await register({
+          username: formData.email,
+          email: formData.email,
+          password: formData.password,
+          name: formData.email.split('@')[0] // Use email prefix as name
+        });
       }
-    } catch (err) {
-      setError('Login failed. Please try again.');
+      navigate('/chat');
+    } catch (error: any) {
+      setError(error.message || 'Authentication failed');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDemoLogin = () => {
-    setEmail('demo@findeep.com');
-    setPassword('demo123');
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+      
+      if (!clientId || clientId === 'your-google-client-id-here') {
+        throw new Error('Google OAuth is not configured. Please set up your Google Client ID in the .env file.');
+      }
+
+      if (!window.google) {
+        throw new Error('Google services not loaded. Please refresh the page and try again.');
+      }
+
+      // Initialize Google Identity Services
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: async (response: any) => {
+          try {
+            await loginWithGoogle(response.credential);
+            navigate('/chat');
+          } catch (error: any) {
+            setError(error.message || 'Google login failed');
+          } finally {
+            setIsLoading(false);
+          }
+        },
+        auto_select: false,
+        cancel_on_tap_outside: true
+      });
+
+      // Prompt the user to sign in
+      window.google.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          setIsLoading(false);
+          if (notification.isNotDisplayed()) {
+            setError('Google sign-in was not displayed. Please check your browser settings and try again.');
+          }
+        }
+      });
+
+    } catch (error: any) {
+      setError(error.message || 'Google login failed');
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-bg via-dark-surface to-dark-bg flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0">
-        {/* Floating orbs */}
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-accent/20 to-accent-light/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-accent-light/10 to-accent/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-gradient-to-r from-accent/30 to-accent-light/30 rounded-full blur-2xl animate-pulse delay-500"></div>
-        
-        {/* Grid pattern */}
-        <div className="absolute inset-0 opacity-[0.02]" style={{
-          backgroundImage: `
-            linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
-          `,
-          backgroundSize: '50px 50px'
-        }} />
-        
-        {/* Animated dots */}
-        <div className="absolute inset-0 opacity-10">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-accent rounded-full animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 2}s`
-              }}
-            />
-          ))}
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary flex items-center justify-center shadow-elegant">
+            <span className="text-white font-bold text-2xl">F</span>
+          </div>
+          <h1 className="text-2xl font-bold text-black mb-2">FinDeep</h1>
+          <p className="text-gray-600">AI-Powered Financial Analysis</p>
         </div>
-      </div>
 
-      <div className={`relative w-full max-w-md transition-all duration-1000 ${isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-        {/* Logo and Header */}
-        <div className="text-center mb-12">
-          <div className="relative mb-6">
-            <div className="w-20 h-20 mx-auto rounded-3xl bg-modern-gradient flex items-center justify-center shadow-glow-lg animate-pulse-glow relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 animate-shimmer"></div>
-              <span className="text-white font-bold text-3xl relative z-10">F</span>
+        {/* Form Card */}
+        <div className="bg-white border border-border rounded-2xl shadow-elegant p-8">
+          {/* Toggle Buttons */}
+          <div className="flex mb-6 bg-secondary-light rounded-xl p-1">
+            <button
+              type="button"
+              onClick={() => setIsLogin(true)}
+              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 ${
+                isLogin
+                  ? 'bg-white text-black shadow-subtle'
+                  : 'text-gray-500 hover:text-black'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsLogin(false)}
+              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 ${
+                !isLogin
+                  ? 'bg-white text-black shadow-subtle'
+                  : 'text-gray-500 hover:text-black'
+              }`}
+            >
+              Sign Up
+            </button>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-error/10 border border-error/20 rounded-lg">
+              <p className="text-error text-sm">{error}</p>
             </div>
-            {/* Glow effect */}
-            <div className="absolute inset-0 w-20 h-20 mx-auto rounded-3xl bg-modern-gradient blur-xl opacity-50 animate-pulse"></div>
-          </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-accent via-accent-light to-accent bg-clip-text text-transparent mb-3 animate-fade-in">
-            FinDeep
-          </h1>
-          <p className="text-dark-text-secondary text-lg animate-fade-in delay-200">
-            AI-Powered Finance Assistant
-          </p>
-          <div className="mt-4 flex justify-center space-x-2 animate-fade-in delay-300">
-            <div className="w-2 h-2 bg-accent rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-accent-light rounded-full animate-bounce delay-100"></div>
-            <div className="w-2 h-2 bg-accent rounded-full animate-bounce delay-200"></div>
-          </div>
-        </div>
+          )}
 
-        {/* Login Form */}
-        <div className="bg-card-gradient backdrop-blur-xl border border-dark-border/50 rounded-3xl shadow-modern-lg p-8 relative overflow-hidden">
-          {/* Form background glow */}
-          <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-transparent to-accent-light/5 rounded-3xl"></div>
-          
-          <form onSubmit={handleLogin} className="space-y-6 relative z-10">
-            <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-semibold text-dark-text mb-2 flex items-center gap-2">
-                <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                </svg>
-                Email Address
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-black mb-2">
+                Email
               </label>
-              <div className="relative group">
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-4 bg-dark-surface/80 border border-dark-border rounded-2xl focus:outline-none focus:border-accent focus:shadow-glow transition-all duration-300 text-dark-text placeholder-dark-text-muted backdrop-blur-sm group-hover:border-accent/50"
-                  placeholder="Enter your email address"
-                  required
-                />
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-accent/10 to-accent-light/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-              </div>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+                className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 text-black placeholder-gray-500"
+                placeholder="Enter your email"
+              />
             </div>
-
-            <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-semibold text-dark-text mb-2 flex items-center gap-2">
-                <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
+            
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-black mb-2">
                 Password
               </label>
-              <div className="relative group">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-4 pr-12 bg-dark-surface/80 border border-dark-border rounded-2xl focus:outline-none focus:border-accent focus:shadow-glow transition-all duration-300 text-dark-text placeholder-dark-text-muted backdrop-blur-sm group-hover:border-accent/50"
-                  placeholder="Enter your password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-dark-text-muted hover:text-accent transition-colors duration-200"
-                >
-                  {showPassword ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  )}
-                </button>
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-accent/10 to-accent-light/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-              </div>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                required
+                className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 text-black placeholder-gray-500"
+                placeholder="Enter your password"
+              />
             </div>
-
-            {error && (
-              <div className="bg-error/10 border border-error/30 rounded-2xl p-4 backdrop-blur-sm animate-slide-up">
-                <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-error flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p className="text-error text-sm font-medium">{error}</p>
-                </div>
+            
+            {!isLogin && (
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-black mb-2">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  required={!isLogin}
+                  className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 text-black placeholder-gray-500"
+                  placeholder="Confirm your password"
+                />
               </div>
             )}
-
+            
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-4 bg-modern-gradient text-white rounded-2xl hover:shadow-glow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-semibold flex items-center justify-center gap-3 relative overflow-hidden group btn-modern"
+              className="w-full py-3 bg-primary text-white rounded-xl hover:bg-accent-hover transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 group-hover:animate-shimmer"></div>
-              {isLoading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Signing In...</span>
-                </>
-              ) : (
-                <>
-                  <span>Sign In</span>
-                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                  </svg>
-                </>
-              )}
+              {isLoading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
             </button>
           </form>
 
-          {/* Demo Login */}
-          <div className="mt-8 pt-6 border-t border-dark-border/50 relative z-10">
-            <button
-              onClick={handleDemoLogin}
-              className="w-full py-3 text-dark-text-secondary hover:text-accent transition-all duration-300 text-sm font-medium flex items-center justify-center gap-2 group"
-            >
-              <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              Try Demo Account
-            </button>
-          </div>
-
-          {/* Features */}
-          <div className="mt-8 space-y-4 relative z-10">
-            <h3 className="text-sm font-semibold text-dark-text flex items-center gap-2">
-              <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Key Features
-            </h3>
-            <div className="grid grid-cols-1 gap-3">
-              <div className="flex items-center gap-3 p-3 bg-dark-surface/30 rounded-xl backdrop-blur-sm border border-dark-border/30 hover:border-accent/30 transition-all duration-300 group">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-accent/20 to-accent-light/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                  <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <span className="text-sm text-dark-text-secondary group-hover:text-dark-text transition-colors duration-200">AI-powered financial analysis</span>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-dark-surface/30 rounded-xl backdrop-blur-sm border border-dark-border/30 hover:border-accent/30 transition-all duration-300 group">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-accent/20 to-accent-light/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                  <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <span className="text-sm text-dark-text-secondary group-hover:text-dark-text transition-colors duration-200">Document attachment & preview</span>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-dark-surface/30 rounded-xl backdrop-blur-sm border border-dark-border/30 hover:border-accent/30 transition-all duration-300 group">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-accent/20 to-accent-light/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                  <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                </div>
-                <span className="text-sm text-dark-text-secondary group-hover:text-dark-text transition-colors duration-200">Real-time chat interface</span>
-              </div>
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">Or continue with</span>
             </div>
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="text-center mt-12 animate-fade-in delay-500">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <div className="w-8 h-px bg-gradient-to-r from-transparent via-dark-border to-transparent"></div>
-            <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
-            <div className="w-8 h-px bg-gradient-to-r from-transparent via-dark-border to-transparent"></div>
+          {/* Google Sign-In Button */}
+          <button
+            onClick={handleGoogleLogin}
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-border rounded-xl hover:bg-secondary-light transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-black"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path
+                fill="#4285F4"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M6.16 14.07c-.1-.33-.16-.68-.16-1.07s.06-.74.16-1.07V9.04H2.18c-.67 1.33-1.04 2.86-1.04 4.46s.37 3.13 1.04 4.46l3.98-3.09z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 4.75c1.92 0 3.6-.65 4.95-1.71l3.14-3.14C17.45.92 14.97 0 12 0 7.7 0 3.99 2.47 2.18 6.02l3.98 3.09c.87-2.6 3.3-4.53 6.16-4.53z"
+              />
+            </svg>
+            {isLogin ? "Sign in with Google" : "Sign up with Google"}
+          </button>
+
+          {/* Demo Login */}
+          <div className="mt-6 pt-6 border-t border-border">
+            <p className="text-center text-gray-500 text-sm mb-3">
+              Want to try without an account?
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate('/chat')}
+              className="w-full py-2 text-primary border border-primary rounded-xl hover:bg-primary hover:text-white transition-all duration-300 font-medium"
+            >
+              Continue as Demo User
+            </button>
           </div>
-          <p className="text-xs text-dark-text-muted">
-            © 2024 FinDeep. All rights reserved.
-          </p>
-          <p className="text-xs text-dark-text-muted mt-1">
-            Powered by AI • Secure • Modern
-          </p>
         </div>
       </div>
     </div>
   );
 };
-

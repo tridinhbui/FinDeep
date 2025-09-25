@@ -6,6 +6,7 @@ export interface User {
   username: string;
   email: string;
   name: string;
+  picture?: string;
 }
 
 export interface AuthResponse {
@@ -95,6 +96,39 @@ class AuthService {
       return data.user;
     } catch (error) {
       console.error('Registration error:', error);
+      throw error;
+    }
+  }
+
+  async loginWithGoogle(googleToken: string): Promise<User> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/google`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: googleToken }),
+      });
+
+      const data: AuthResponse = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Google login failed');
+      }
+
+      if (!data.user || !data.token) {
+        throw new Error('Invalid response from server');
+      }
+
+      // Store token and user
+      this.token = data.token;
+      this.user = data.user;
+      localStorage.setItem('findeep-token', data.token);
+      localStorage.setItem('findeep-user', JSON.stringify(data.user));
+
+      return data.user;
+    } catch (error) {
+      console.error('Google login error:', error);
       throw error;
     }
   }

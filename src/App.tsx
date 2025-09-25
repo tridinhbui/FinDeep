@@ -1,8 +1,9 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import { ChatWithPreview } from "./pages/chat";
-import { NewLoginPage } from "./pages/auth/NewLoginPage";
+import { LoginPage } from "./pages/auth/LoginPage";
 import "./App.css";
 
 // Demo user interface for backward compatibility
@@ -16,12 +17,12 @@ const AppRoutes: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-dark-bg to-dark-surface flex items-center justify-center">
+      <div className="min-h-screen bg-secondary dark:bg-secondary-dark flex items-center justify-center theme-transition">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-modern-gradient flex items-center justify-center shadow-glow animate-pulse">
-            <span className="text-white font-bold text-2xl">F</span>
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary dark:bg-primary-dark flex items-center justify-center shadow-elegant dark:shadow-elegant-dark animate-pulse">
+            <span className="text-secondary dark:text-secondary-dark font-bold text-2xl">F</span>
           </div>
-          <p className="text-dark-text-secondary">Loading FinDeep...</p>
+          <p className="text-text-secondary dark:text-text-secondary-dark theme-transition">Loading FinDeep...</p>
         </div>
       </div>
     );
@@ -38,7 +39,7 @@ const AppRoutes: React.FC = () => {
       <Route 
         path="/login" 
         element={
-          isAuthenticated ? <Navigate to="/chat" replace /> : <NewLoginPage />
+          isAuthenticated ? <Navigate to="/chat" replace /> : <LoginPage />
         } 
       />
       <Route 
@@ -67,13 +68,15 @@ const AppRoutes: React.FC = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <div className="App">
-          <AppRoutes />
-        </div>
-      </Router>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <div className="App">
+            <AppRoutes />
+          </div>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

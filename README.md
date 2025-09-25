@@ -6,10 +6,11 @@ FinDeep is a modern web application that provides AI-powered financial analysis 
 
 - **AI-Powered Financial Analysis**: Get intelligent insights from OpenAI GPT or Anthropic Claude
 - **User Authentication**: Secure registration and login with unique user accounts
-- **Chat History Persistence**: All conversations saved to MongoDB database
+- **Google OAuth Integration**: Sign in with Google accounts
+- **Chat History Persistence**: All conversations saved to database
 - **Multi-User API Key Management**: Each user can connect their own API keys
-- **File Upload Support**: Upload financial documents for analysis
-- **Modern UI/UX**: Beautiful dark theme with glassmorphism effects
+- **File Upload Support**: Upload financial documents for analysis (PDF, CSV, Markdown, Text, HTML, JSON)
+- **Modern UI/UX**: Clean white-black theme with dark/light mode toggle
 - **Real-time Chat Interface**: Interactive conversation with AI financial advisor
 - **Document Viewer**: View and analyze uploaded financial documents
 - **Demo Mode**: Works without API keys for testing
@@ -17,12 +18,12 @@ FinDeep is a modern web application that provides AI-powered financial analysis 
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 18, TypeScript, Tailwind CSS
-- **Backend**: Node.js, Express.js, MongoDB
+- **Backend**: Node.js, Express.js, JSON file storage (MongoDB ready)
 - **AI Integration**: OpenAI GPT-3.5-turbo, Anthropic Claude
-- **Authentication**: JWT tokens with bcrypt password hashing
-- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT tokens with bcrypt password hashing, Google OAuth
+- **Database**: JSON file storage (easily upgradeable to MongoDB)
 - **Build Tool**: Create React App
-- **Styling**: Tailwind CSS with custom dark theme
+- **Styling**: Tailwind CSS with clean white-black theme
 - **State Management**: React Hooks with Context API
 
 ## �� Prerequisites
@@ -31,8 +32,8 @@ Before running FinDeep, make sure you have:
 
 - **Node.js** (version 16 or higher)
 - **npm** or **yarn** package manager
-- **MongoDB** (local installation or MongoDB Atlas account)
 - **OpenAI API Key** or **Anthropic Claude API Key** (optional - demo mode available)
+- **Google OAuth Client ID** (optional - for Google sign-in)
 
 ## 🚀 Quick Start
 
@@ -62,18 +63,15 @@ Create a `.env` file in the root directory:
 
 ```bash
 # Backend API URL
-REACT_APP_BACKEND_URL=http://localhost:5000/api
+REACT_APP_BACKEND_URL=http://localhost:5001/api
 
-# AI Configuration
+# Google OAuth (Optional)
+REACT_APP_GOOGLE_CLIENT_ID=your-google-client-id-here
+
+# AI Configuration (Optional - for global fallback)
 REACT_APP_AI_PROVIDER=openai
-
-# Claude API Configuration (Optional)
-REACT_APP_CLAUDE_API_KEY=your-claude-api-key-here
-REACT_APP_CLAUDE_API_URL=https://api.anthropic.com/v1
-
-# OpenAI API Configuration (Optional)
 REACT_APP_OPENAI_API_KEY=your-openai-api-key-here
-REACT_APP_OPENAI_API_URL=https://api.openai.com/v1
+REACT_APP_CLAUDE_API_KEY=your-claude-api-key-here
 
 # Debug mode (set to true for development)
 REACT_APP_DEBUG=true
@@ -84,13 +82,12 @@ Create a `.env` file in the `backend` directory:
 
 ```bash
 # Server Configuration
-PORT=5000
+PORT=5001
 NODE_ENV=development
 FRONTEND_URL=http://localhost:3000
 
-# Database
-MONGODB_URI=mongodb://localhost:27017/findeep
-# For MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net/findeep
+# Google OAuth (Optional)
+GOOGLE_CLIENT_ID=your-google-client-id-here
 
 # JWT Secret (generate a strong secret key)
 JWT_SECRET=your-super-secret-jwt-key-here
@@ -105,7 +102,7 @@ CLAUDE_API_KEY=your-claude-api-key-here
 ```bash
 # Start the backend server (in one terminal)
 cd backend
-npm run dev
+node server.js
 
 # Start the frontend server (in another terminal)
 cd ..
@@ -113,7 +110,7 @@ npm start
 ```
 
 - **Frontend**: `http://localhost:3000`
-- **Backend API**: `http://localhost:5000`
+- **Backend API**: `http://localhost:5001`
 
 ## 🔑 API Key Setup
 
@@ -162,3 +159,84 @@ Each user can now use their own API keys without affecting others.
 3. **Ask questions** about your uploaded files
 
 ### Example Questions
+
+- "How should I allocate my monthly budget of $5000?"
+- "What's the best investment strategy for a 25-year-old?"
+- "Analyze this CSV file of my expenses and suggest improvements"
+- "Create a retirement plan for someone with $100k savings"
+
+## 🎨 Current Features
+
+### ✅ **Implemented & Working:**
+- **User Authentication**: Sign up, login, logout with persistent sessions
+- **Google OAuth**: Sign in with Google accounts
+- **AI Chat Interface**: Real-time conversation with OpenAI/Claude
+- **File Upload**: Support for PDF, CSV, Markdown, Text, HTML, JSON files
+- **Document Viewer**: View and analyze uploaded documents
+- **Settings Panel**: Theme toggle (light/dark mode), API key management
+- **Clean UI**: White-black theme matching login page design
+- **Demo Mode**: Works without API keys for testing
+- **User-Specific API Keys**: Each user can use their own API keys
+
+### 🔄 **Ready for Enhancement:**
+- **MongoDB Integration**: Currently uses JSON file storage, easily upgradeable
+- **Chat History**: Basic persistence, ready for full database integration
+- **Advanced Analytics**: Ready for financial data analysis features
+
+## 📁 Project Structure
+
+```
+FinDeep/
+├── src/                    # Frontend React application
+│   ├── components/         # Reusable UI components
+│   ├── pages/             # Main application pages
+│   ├── contexts/          # React Context providers
+│   ├── services/          # API and authentication services
+│   └── types/             # TypeScript type definitions
+├── backend/               # Node.js backend server
+│   ├── server.js          # Main server file
+│   ├── users.json         # User data storage
+│   └── package.json       # Backend dependencies
+├── public/                # Static assets
+├── README.md              # This file
+├── API_SETUP.md           # API configuration guide
+├── GOOGLE_OAUTH_SETUP.md  # Google OAuth setup guide
+└── package.json           # Frontend dependencies
+```
+
+## 🚀 Deployment
+
+### Development
+```bash
+# Start both servers
+cd backend && node server.js &
+cd .. && npm start
+```
+
+### Production
+```bash
+# Build frontend
+npm run build
+
+# Start backend
+cd backend && node server.js
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions:
+- Check the setup guides in the repository
+- Review the API configuration documentation
+- Test with demo mode first before adding API keys

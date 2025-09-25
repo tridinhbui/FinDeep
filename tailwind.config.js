@@ -6,34 +6,34 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'dark-bg': '#0a0a0a',
-        'dark-surface': '#111111',
-        'dark-surface-hover': '#1a1a1a',
-        'dark-border': '#1f1f1f',
-        'dark-border-hover': '#2a2a2a',
-        'dark-text': '#f5f5f5',
-        'dark-text-secondary': '#a3a3a3',
-        'dark-text-muted': '#737373',
-        'accent': '#6366f1',
-        'accent-hover': '#4f46e5',
-        'accent-light': '#8b5cf6',
-        'success': '#10b981',
-        'warning': '#f59e0b',
-        'error': '#ef4444',
-        'gradient-start': '#667eea',
-        'gradient-end': '#764ba2',
+        // Clean White-Black Theme (matching login page)
+        'primary': '#000000',        // Pure black
+        'secondary': '#ffffff',      // Pure white
+        'secondary-light': '#f8f9fa', // Very light gray
+        'surface': '#ffffff',        // White surface
+        'surface-hover': '#f8f9fa',  // Light hover
+        'border': '#e5e7eb',         // Light border
+        'text': '#000000',           // Black text
+        'text-secondary': '#6b7280', // Gray text
+        'text-muted': '#9ca3af',     // Muted text
+        'accent': '#000000',         // Black accent
+        'accent-hover': '#1a1a1a',   // Dark hover
+        'success': '#10b981',        // Green
+        'warning': '#f59e0b',        // Orange
+        'error': '#ef4444',          // Red
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-        'modern-gradient': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        'card-gradient': 'linear-gradient(145deg, #1a1a1a 0%, #111111 100%)',
+        'modern-gradient': 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)',
+        'card-gradient': 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
+        'subtle-gradient': 'linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%)',
       },
       boxShadow: {
-        'modern': '0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
-        'modern-lg': '0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
-        'glow': '0 0 20px rgba(99, 102, 241, 0.3)',
-        'glow-lg': '0 0 40px rgba(99, 102, 241, 0.4)',
+        'modern': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        'modern-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        'subtle': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+        'elegant': '0 4px 14px 0 rgba(0, 0, 0, 0.1)',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',

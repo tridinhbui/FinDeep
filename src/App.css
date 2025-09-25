@@ -3,6 +3,34 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Light theme variables - default */
+    --color-bg: #ffffff;
+    --color-text: #000000;
+    --color-text-secondary: #6b7280;
+    --color-text-muted: #9ca3af;
+    --color-surface: #ffffff;
+    --color-surface-hover: #f8f9fa;
+    --color-border: #e5e7eb;
+    --color-scrollbar-track: #f1f3f4;
+    --color-scrollbar-thumb: #000000;
+    --color-scrollbar-thumb-hover: #1a1a1a;
+  }
+
+  .dark {
+    /* Dark theme variables - only when dark class is applied */
+    --color-bg: #000000;
+    --color-text: #ffffff;
+    --color-text-secondary: #d1d5db;
+    --color-text-muted: #9ca3af;
+    --color-surface: #111111;
+    --color-surface-hover: #1a1a1a;
+    --color-border: #374151;
+    --color-scrollbar-track: #1f2937;
+    --color-scrollbar-thumb: #ffffff;
+    --color-scrollbar-thumb-hover: #f3f4f6;
+  }
+
   * {
     box-sizing: border-box;
   }
@@ -18,12 +46,15 @@
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: linear-gradient(135deg, #0a0a0a 0%, #111111 100%);
+    background: var(--color-bg);
+    color: var(--color-text);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   #root {
     height: 100%;
-    background: linear-gradient(135deg, #0a0a0a 0%, #111111 100%);
+    background: var(--color-bg);
+    transition: background-color 0.3s ease;
   }
 
   /* Modern scrollbar */
@@ -33,47 +64,47 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--color-scrollbar-track);
     border-radius: 3px;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: var(--color-scrollbar-thumb);
     border-radius: 3px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    background: var(--color-scrollbar-thumb-hover);
   }
 }
 
 @layer components {
   .prose {
-    @apply text-dark-text;
+    @apply text-text;
   }
 
   .prose h1 {
-    @apply text-2xl font-bold mb-4 text-dark-text;
+    @apply text-2xl font-bold mb-4 text-text;
   }
 
   .prose h2 {
-    @apply text-xl font-semibold mb-3 text-dark-text;
+    @apply text-xl font-semibold mb-3 text-text;
   }
 
   .prose h3 {
-    @apply text-lg font-semibold mb-2 text-dark-text;
+    @apply text-lg font-semibold mb-2 text-text;
   }
 
   .prose p {
-    @apply mb-3 text-dark-text-secondary leading-relaxed;
+    @apply mb-3 text-text-secondary leading-relaxed;
   }
 
   .prose strong {
-    @apply font-semibold text-dark-text;
+    @apply font-semibold text-text;
   }
 
   .prose em {
-    @apply italic text-dark-text-secondary;
+    @apply italic text-text-secondary;
   }
 
   .prose ul,
@@ -82,33 +113,33 @@
   }
 
   .prose li {
-    @apply mb-1 text-dark-text-secondary;
+    @apply mb-1 text-text-secondary;
   }
 
   .prose code {
-    @apply bg-dark-surface px-2 py-1 rounded text-sm font-mono text-dark-text;
+    @apply bg-secondary-light px-2 py-1 rounded text-sm font-mono text-text;
   }
 
   .prose pre {
-    @apply bg-dark-surface p-4 rounded-lg overflow-x-auto text-sm font-mono text-dark-text-secondary;
+    @apply bg-secondary-light p-4 rounded-lg overflow-x-auto text-sm font-mono text-text-secondary;
   }
 
   .prose blockquote {
-    @apply border-l-4 border-accent pl-4 italic text-dark-text-secondary;
+    @apply border-l-4 border-accent pl-4 italic text-text-secondary;
   }
 }
 
-/* Modern glassmorphism effects */
+/* Modern clean effects */
 .glass {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
-.glass-dark {
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+.dark .glass {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Enhanced animations */
@@ -140,6 +171,15 @@
   );
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
+}
+
+.dark .shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
 }
 
 /* Modern button effects */
@@ -176,6 +216,33 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
+/* Ensure input text is always visible */
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  color: #000000 !important;
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Ensure button text is always visible - only for specific button types */
+button:not([class*="bg-primary"]):not([class*="text-white"]) {
+  color: #000000 !important;
+}
+
+/* Theme transition utilities */
+.theme-transition {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.theme-transition-all {
+  transition: all 0.3s ease;
+}
+
 /* Responsive design */
 @media (max-width: 1024px) {
   .chat-panel {
@@ -189,6 +256,6 @@ input:focus-visible {
     width: 100%;
     height: 100%;
     z-index: 50;
-    background: #0f0f0f;
+    background: var(--color-bg);
   }
 }

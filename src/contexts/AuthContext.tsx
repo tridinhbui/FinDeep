@@ -12,6 +12,7 @@ interface AuthContextType {
     password: string;
     name: string;
   }) => Promise<void>;
+  loginWithGoogle: (googleToken: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -78,6 +79,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const loginWithGoogle = async (googleToken: string) => {
+    try {
+      const googleUser = await authService.loginWithGoogle(googleToken);
+      setUser(googleUser);
+    } catch (error) {
+      console.error('Google login failed:', error);
+      throw error;
+    }
+  };
+
   const logout = () => {
     authService.logout();
     setUser(null);
@@ -89,6 +100,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     login,
     register,
+    loginWithGoogle,
     logout,
   };
 
