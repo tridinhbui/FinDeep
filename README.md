@@ -13,6 +13,7 @@ FinDeep is a modern web application that provides AI-powered financial analysis 
 - **Modern UI/UX**: Clean white-black theme with intelligent dark/light mode toggle
 - **Simplified File Upload**: Clean attachment chips without cluttered messages
 - **Real-time Chat Interface**: Interactive conversation with AI financial advisor
+- **Chat History Sidebar**: Persistent chat history with smooth slide animations
 - **Document Viewer**: View and analyze uploaded financial documents
 - **Demo Mode**: Works without API keys for testing
 
@@ -175,6 +176,7 @@ Each user can now use their own API keys without affecting others.
 - **Google OAuth**: Sign in with Google accounts (email-based login)
 - **AI Chat Interface**: Real-time conversation with OpenAI/Claude
 - **File Upload**: Support for PDF, CSV, Markdown, Text, HTML, JSON files
+- **Chat History Sidebar**: Smooth slide animations with persistent history
 - **Simplified File Display**: Clean attachment chips without cluttered messages
 - **Document Viewer**: View and analyze uploaded documents
 - **Intelligent Theme System**: Light/dark mode toggle with persistent preferences
@@ -183,6 +185,7 @@ Each user can now use their own API keys without affecting others.
 - **Demo Mode**: Works without API keys for testing
 - **User-Specific API Keys**: Each user can use their own API keys
 - **Responsive Design**: Works seamlessly on desktop and mobile
+- **Enhanced Animations**: Smooth slide transitions for chat history sidebar
 
 ### 🔄 **Ready for Enhancement:**
 - **MongoDB Integration**: Currently uses JSON file storage, easily upgradeable
@@ -190,6 +193,14 @@ Each user can now use their own API keys without affecting others.
 - **Advanced Analytics**: Ready for financial data analysis features
 
 ## 🆕 **Recent Improvements**
+
+### **Chat History & Animation Enhancement**
+- ✅ **Smooth Slide Animations**: Enhanced chat history sidebar with smooth slide transitions
+- ✅ **Cubic-bezier Easing**: Natural motion feel with (0.4, 0, 0.2, 1) easing curves
+- ✅ **Dual-Layer Animation**: Coordinated width expansion and content sliding
+- ✅ **Debounced Interactions**: Prevents rapid clicking issues on hamburger menu
+- ✅ **Responsive Integration**: Seamless mobile and desktop animations
+- ✅ **Background Transitions**: Smooth backdrop opacity changes for better UX
 
 ### **Theme System Enhancement**
 - ✅ **Intelligent Dark/Light Mode**: Smooth transitions with persistent user preferences
@@ -215,29 +226,52 @@ Each user can now use their own API keys without affecting others.
 FinDeep/
 ├── src/                    # Frontend React application
 │   ├── components/         # Reusable UI components
-│   │   ├── auth/          # Authentication components (GoogleAuth)
-│   │   ├── chat/          # Chat components (MessageItem, FileUpload)
-│   │   ├── settings/      # Settings components (ThemeToggle, SettingsPanel)
+│   │   ├── auth/          # Authentication components
+│   │   │   └── GoogleAuth.tsx        # Google OAuth button
+│   │   ├── chat/          # Chat components
+│   │   │   ├── ChatHistorySidebar.tsx # Chat history sidebar
+│   │   │   ├── FileUpload.tsx        # File upload component
+│   │   │   └── MessageItem.tsx       # Individual chat messages
+│   │   ├── settings/      # Settings components
+│   │   │   ├── ApiKeySettings.tsx    # API key management
+│   │   │   ├── SettingsPanel.tsx     # Settings panel
+│   │   │   └── ThemeToggle.tsx       # Theme toggle button
 │   │   └── viewer/        # Document viewer components
+│   │       └── DocumentViewer.tsx    # PDF/document viewer
 │   ├── pages/             # Main application pages
 │   │   ├── auth/          # Login and registration pages
+│   │   │   ├── LoginPage.tsx         # Main login page
+│   │   │   └── NewLoginPage.tsx      # Alternative login page
 │   │   └── chat/          # Main chat interface
-│   ├── contexts/          # React Context providers (Auth, Theme)
+│   │       └── index.tsx             # Chat page with history sidebar
+│   ├── contexts/          # React Context providers
+│   │   ├── AuthContext.tsx           # Authentication state
+│   │   └── ThemeContext.tsx          # Theme state management
 │   ├── services/          # API and authentication services
+│   │   ├── api.ts         # Main API service
+│   │   ├── authService.ts # Authentication service
+│   │   └── backendApi.ts  # Backend API service
 │   ├── types/             # TypeScript type definitions
-│   └── lib/               # Utility libraries (viewer state management)
+│   │   └── chat.ts        # Chat message and attachment types
+│   └── lib/               # Utility libraries
+│       └── storage/       # Local storage utilities
+│           └── viewerState.ts         # Document viewer state
 ├── backend/               # Node.js backend server
-│   ├── server.js          # Main server file
+│   ├── server.js         # Main server file
 │   ├── persistent-server.js # Persistent data server
-│   ├── users.json         # User data storage
-│   ├── README.md          # Backend setup guide
-│   └── package.json       # Backend dependencies
-├── public/                # Static assets
-├── README.md              # This file
-├── API_SETUP.md           # API configuration guide
-├── GOOGLE_OAUTH_SETUP.md  # Google OAuth setup guide
-├── ENVIRONMENT_SETUP.md   # Environment configuration guide
-└── package.json           # Frontend dependencies
+│   ├── users.json        # User data storage
+│   ├── package.json      # Backend dependencies
+│   └── README.md         # Backend setup guide
+├── public/               # Static assets (index.html)
+├── src/App.css           # Global styles with theme variables
+├── README.md             # This file
+├── API_SETUP.md          # API configuration guide
+├── GOOGLE_OAUTH_SETUP.md # Google OAuth setup guide
+├── ENVIRONMENT_SETUP.md  # Environment configuration guide
+├── OPENAI_SETUP.md       # OpenAI API setup guide
+├── tailwind.config.js    # Tailwind CSS configuration
+├── tsconfig.json         # TypeScript configuration
+└── package.json          # Frontend dependencies
 ```
 
 ## 🚀 Deployment
