@@ -261,26 +261,33 @@ export const NewLoginPage: React.FC = () => {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
-            </div>
-          </div>
+          {/* Google Sign-In - Only show on login */}
+          {isLogin && (
+            <>
+              {/* Divider */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                </div>
+              </div>
 
-          {/* Google Sign-In */}
-          <GoogleAuth
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleError}
-            text="signin_with"
-            theme="outline"
-            size="large"
-            width={300}
-            disabled={isLoading}
-          />
+              {/* Google Auth */}
+              <div className="flex justify-center">
+                <GoogleAuth
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  text="signin_with"
+                  theme="outline"
+                  size="large"
+                  width={300}
+                  disabled={isLoading}
+                />
+              </div>
+            </>
+          )}
 
           {/* Demo Login */}
           <div className="mt-6 pt-6 border-t border-border">

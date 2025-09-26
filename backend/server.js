@@ -295,20 +295,28 @@ app.post('/api/auth/google', async (req, res) => {
     let user = users.find(u => u.email === googleUser.email);
 
     if (!user) {
-      // Reject signup - only allow existing users
-      console.log('Google signup attempt rejected for:', googleUser.email);
-      return res.status(403).json({
-        success: false,
-        message: 'Account not found. Please use regular email/password registration to create an account first.'
-      });
-    }
-
-    // Update existing user's Google info if needed
-    if (!user.googleId) {
-      user.googleId = googleUser.googleId;
-      user.picture = googleUser.picture;
+      // Create new user
+      const newUser = {
+        id: Date.now().toString(),
+        username: googleUser.email.split('@')[0],
+        email: googleUser.email,
+        name: googleUser.name,
+        googleId: googleUser.googleId,
+        picture: googleUser.picture,
+        password: null,
+        createdAt: new Date().toISOString()
+      };
+      
+      users.push(newUser);
       writeUsers(users);
-      console.log('Google info linked to existing user:', googleUser.email);
+      user = newUser;
+    } else {
+      // Update existing user
+      if (!user.googleId) {
+        user.googleId = googleUser.googleId;
+        user.picture = googleUser.picture;
+        writeUsers(users);
+      }
     }
 
     const jwtToken = generateToken(user.id);

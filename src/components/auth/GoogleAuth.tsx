@@ -68,8 +68,8 @@ export const GoogleAuth: React.FC<GoogleAuthProps> = ({
   }, [onSuccess, onError, text, theme, size, width, disabled]);
 
   return (
-    <div className="w-full">
-      <div id="google-signin-button" className="w-full"></div>
+    <div className="w-full flex justify-center">
+      <div id="google-signin-button" className="flex justify-center"></div>
     </div>
   );
 };

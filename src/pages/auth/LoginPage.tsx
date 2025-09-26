@@ -11,12 +11,14 @@ declare global {
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login, loginWithGoogle } = useAuth();
+  const { login, register, loginWithGoogle } = useAuth();
+  const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
 
   // Check if Google services are loaded
@@ -47,10 +49,22 @@ export const LoginPage: React.FC = () => {
     setError('');
 
     try {
-      await login(formData.email, formData.password);
+      if (isLogin) {
+        await login(formData.email, formData.password);
+      } else {
+        if (formData.password !== formData.confirmPassword) {
+          throw new Error('Passwords do not match');
+        }
+        await register({
+          username: formData.email,
+          email: formData.email,
+          password: formData.password,
+          name: formData.email.split('@')[0] // Use email prefix as name
+        });
+      }
       navigate('/chat');
     } catch (error: any) {
-      setError(error.message || 'Login failed');
+      setError(error.message || 'Authentication failed');
     } finally {
       setIsLoading(false);
     }
@@ -90,6 +104,31 @@ export const LoginPage: React.FC = () => {
 
         {/* Form Card */}
         <div className="bg-white border border-border rounded-2xl shadow-elegant p-8">
+          {/* Toggle Buttons */}
+          <div className="flex mb-6 bg-secondary-light rounded-xl p-1">
+            <button
+              type="button"
+              onClick={() => setIsLogin(true)}
+              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 ${
+                isLogin
+                  ? 'bg-white text-black shadow-subtle'
+                  : 'text-gray-500 hover:text-black'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsLogin(false)}
+              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 ${
+                !isLogin
+                  ? 'bg-white text-black shadow-subtle'
+                  : 'text-gray-500 hover:text-black'
+              }`}
+            >
+              Sign Up
+            </button>
+          </div>
 
           {/* Error Message */}
           {error && (
@@ -133,36 +172,60 @@ export const LoginPage: React.FC = () => {
               />
             </div>
             
+            {!isLogin && (
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-black mb-2">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  required={!isLogin}
+                  className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 text-black placeholder-gray-500"
+                  placeholder="Confirm your password"
+                />
+              </div>
+            )}
             
             <button
               type="submit"
               disabled={isLoading}
               className="w-full py-3 bg-primary text-white rounded-xl hover:bg-accent-hover transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Loading...' : 'Sign In'}
+              {isLoading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
-            </div>
-          </div>
-
-          {/* Google Sign-In Button */}
-          <GoogleAuth
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleError}
-            text="signin_with"
-            theme="outline"
-            size="large"
-            width={300}
-            disabled={isLoading}
-          />
+          {/* Google Sign-In Button - Only show on login */}
+          {isLogin && (
+            <>
+              {/* Divider */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                </div>
+              </div>
+              
+              {/* Google Auth */}
+              <div className="flex justify-center">
+                <GoogleAuth
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  text="signin_with"
+                  theme="outline"
+                  size="large"
+                  width={300}
+                  disabled={isLoading}
+                />
+              </div>
+            </>
+          )}
 
           {/* Demo Login */}
           <div className="mt-6 pt-6 border-t border-border">
