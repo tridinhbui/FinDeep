@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { GoogleAuth } from '../../components/auth/GoogleAuth';
 
 declare global {
   interface Window {
@@ -10,14 +11,12 @@ declare global {
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login, register, loginWithGoogle } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
+  const { login, loginWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
-    confirmPassword: ''
+    password: ''
   });
 
   // Check if Google services are loaded
@@ -48,73 +47,33 @@ export const LoginPage: React.FC = () => {
     setError('');
 
     try {
-      if (isLogin) {
-        await login(formData.email, formData.password);
-      } else {
-        if (formData.password !== formData.confirmPassword) {
-          throw new Error('Passwords do not match');
-        }
-        await register({
-          username: formData.email,
-          email: formData.email,
-          password: formData.password,
-          name: formData.email.split('@')[0] // Use email prefix as name
-        });
-      }
+      await login(formData.email, formData.password);
       navigate('/chat');
     } catch (error: any) {
-      setError(error.message || 'Authentication failed');
+      setError(error.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleSuccess = async (response: any) => {
     setIsLoading(true);
     setError('');
 
     try {
-      const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-      
-      if (!clientId || clientId === 'your-google-client-id-here') {
-        throw new Error('Google OAuth is not configured. Please set up your Google Client ID in the .env file.');
-      }
-
-      if (!window.google) {
-        throw new Error('Google services not loaded. Please refresh the page and try again.');
-      }
-
-      // Initialize Google Identity Services
-      window.google.accounts.id.initialize({
-        client_id: clientId,
-        callback: async (response: any) => {
-          try {
-            await loginWithGoogle(response.credential);
-            navigate('/chat');
-          } catch (error: any) {
-            setError(error.message || 'Google login failed');
-          } finally {
-            setIsLoading(false);
-          }
-        },
-        auto_select: false,
-        cancel_on_tap_outside: true
-      });
-
-      // Prompt the user to sign in
-      window.google.accounts.id.prompt((notification: any) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          setIsLoading(false);
-          if (notification.isNotDisplayed()) {
-            setError('Google sign-in was not displayed. Please check your browser settings and try again.');
-          }
-        }
-      });
-
+      await loginWithGoogle(response.credential);
+      navigate('/chat');
     } catch (error: any) {
       setError(error.message || 'Google login failed');
+    } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleGoogleError = (error: any) => {
+    console.error('Google authentication error:', error);
+    setError('Google authentication failed. Please try again.');
+    setIsLoading(false);
   };
 
   return (
@@ -131,31 +90,6 @@ export const LoginPage: React.FC = () => {
 
         {/* Form Card */}
         <div className="bg-white border border-border rounded-2xl shadow-elegant p-8">
-          {/* Toggle Buttons */}
-          <div className="flex mb-6 bg-secondary-light rounded-xl p-1">
-            <button
-              type="button"
-              onClick={() => setIsLogin(true)}
-              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 ${
-                isLogin
-                  ? 'bg-white text-black shadow-subtle'
-                  : 'text-gray-500 hover:text-black'
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsLogin(false)}
-              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 ${
-                !isLogin
-                  ? 'bg-white text-black shadow-subtle'
-                  : 'text-gray-500 hover:text-black'
-              }`}
-            >
-              Sign Up
-            </button>
-          </div>
 
           {/* Error Message */}
           {error && (
@@ -199,30 +133,13 @@ export const LoginPage: React.FC = () => {
               />
             </div>
             
-            {!isLogin && (
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-black mb-2">
-                  Confirm Password
-                </label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  required={!isLogin}
-                  className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 text-black placeholder-gray-500"
-                  placeholder="Confirm your password"
-                />
-              </div>
-            )}
             
             <button
               type="submit"
               disabled={isLoading}
               className="w-full py-3 bg-primary text-white rounded-xl hover:bg-accent-hover transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
+              {isLoading ? 'Loading...' : 'Sign In'}
             </button>
           </form>
 
@@ -237,31 +154,15 @@ export const LoginPage: React.FC = () => {
           </div>
 
           {/* Google Sign-In Button */}
-          <button
-            onClick={handleGoogleLogin}
+          <GoogleAuth
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            text="signin_with"
+            theme="outline"
+            size="large"
+            width={300}
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-border rounded-xl hover:bg-secondary-light transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-black"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
-              <path
-                fill="#4285F4"
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              />
-              <path
-                fill="#34A853"
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M6.16 14.07c-.1-.33-.16-.68-.16-1.07s.06-.74.16-1.07V9.04H2.18c-.67 1.33-1.04 2.86-1.04 4.46s.37 3.13 1.04 4.46l3.98-3.09z"
-              />
-              <path
-                fill="#EA4335"
-                d="M12 4.75c1.92 0 3.6-.65 4.95-1.71l3.14-3.14C17.45.92 14.97 0 12 0 7.7 0 3.99 2.47 2.18 6.02l3.98 3.09c.87-2.6 3.3-4.53 6.16-4.53z"
-              />
-            </svg>
-            {isLogin ? "Sign in with Google" : "Sign up with Google"}
-          </button>
+          />
 
           {/* Demo Login */}
           <div className="mt-6 pt-6 border-t border-border">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { CustomGoogleButton } from '../../components/auth/GoogleAuth';
+import { GoogleAuth } from '../../components/auth/GoogleAuth';
 
 declare global {
   interface Window {
@@ -132,6 +132,26 @@ export const NewLoginPage: React.FC = () => {
     }
   };
 
+  const handleGoogleSuccess = async (response: any) => {
+    setIsLoading(true);
+    setError('');
+
+    try {
+      await loginWithGoogle(response.credential);
+      navigate('/chat');
+    } catch (error: any) {
+      setError(error.message || 'Google login failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleError = (error: any) => {
+    console.error('Google authentication error:', error);
+    setError('Google authentication failed. Please try again.');
+    setIsLoading(false);
+  };
+
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -252,10 +272,14 @@ export const NewLoginPage: React.FC = () => {
           </div>
 
           {/* Google Sign-In */}
-          <CustomGoogleButton
-            onClick={handleGoogleLogin}
+          <GoogleAuth
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            text="signin_with"
+            theme="outline"
+            size="large"
+            width={300}
             disabled={isLoading}
-            text={isLogin ? "Sign in with Google" : "Sign up with Google"}
           />
 
           {/* Demo Login */}

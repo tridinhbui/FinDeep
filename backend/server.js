@@ -84,16 +84,21 @@ function verifyToken(token) {
 // Verify Google token
 async function verifyGoogleToken(token) {
   try {
+    console.log('Google Client ID configured:', GOOGLE_CLIENT_ID);
     if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID === 'your-google-client-id-here') {
+      console.error('Google OAuth not configured - GOOGLE_CLIENT_ID missing');
       throw new Error('Google OAuth not configured');
     }
     
+    console.log('Attempting to verify Google token...');
     const ticket = await client.verifyIdToken({
       idToken: token,
       audience: GOOGLE_CLIENT_ID,
     });
     
     const payload = ticket.getPayload();
+    console.log('Token verification successful for:', payload['email']);
+    
     return {
       googleId: payload['sub'],
       email: payload['email'],
@@ -103,7 +108,8 @@ async function verifyGoogleToken(token) {
     };
   } catch (error) {
     console.error('Google token verification failed:', error);
-    throw new Error('Invalid Google token');
+    console.error('Error details:', error.message);
+    throw new Error('Invalid Google token: ' + error.message);
   }
 }
 
@@ -263,16 +269,20 @@ app.post('/api/auth/login', async (req, res) => {
 // Google OAuth login
 app.post('/api/auth/google', async (req, res) => {
   try {
+    console.log('Google auth request received');
     const { token } = req.body;
     
     if (!token) {
+      console.log('No Google token provided');
       return res.status(400).json({
         success: false,
         message: 'Google token is required'
       });
     }
 
+    console.log('Verifying Google token...');
     const googleUser = await verifyGoogleToken(token);
+    console.log('Google user verified:', { email: googleUser.email, name: googleUser.name });
     
     if (!googleUser.emailVerified) {
       return res.status(400).json({
@@ -285,28 +295,20 @@ app.post('/api/auth/google', async (req, res) => {
     let user = users.find(u => u.email === googleUser.email);
 
     if (!user) {
-      // Create new user
-      const newUser = {
-        id: Date.now().toString(),
-        username: googleUser.email.split('@')[0],
-        email: googleUser.email,
-        name: googleUser.name,
-        googleId: googleUser.googleId,
-        picture: googleUser.picture,
-        password: null,
-        createdAt: new Date().toISOString()
-      };
-      
-      users.push(newUser);
+      // Reject signup - only allow existing users
+      console.log('Google signup attempt rejected for:', googleUser.email);
+      return res.status(403).json({
+        success: false,
+        message: 'Account not found. Please use regular email/password registration to create an account first.'
+      });
+    }
+
+    // Update existing user's Google info if needed
+    if (!user.googleId) {
+      user.googleId = googleUser.googleId;
+      user.picture = googleUser.picture;
       writeUsers(users);
-      user = newUser;
-    } else {
-      // Update existing user
-      if (!user.googleId) {
-        user.googleId = googleUser.googleId;
-        user.picture = googleUser.picture;
-        writeUsers(users);
-      }
+      console.log('Google info linked to existing user:', googleUser.email);
     }
 
     const jwtToken = generateToken(user.id);
@@ -326,9 +328,11 @@ app.post('/api/auth/google', async (req, res) => {
 
   } catch (error) {
     console.error('Google login error:', error);
+    const errorMessage = error.message || 'Server error during Google login';
+    console.error('Error details:', errorMessage);
     res.status(500).json({
       success: false,
-      message: 'Server error during Google login'
+      message: errorMessage
     });
   }
 });

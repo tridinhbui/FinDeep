@@ -22,5 +22,25 @@
     "name": "Demo User",
     "password": "$2b$10$bTmb0.of6O2I.8v1IdnKa.FoFN0Ip1LEr0zt/yGzqBvPoqRX.yt/e",
     "createdAt": "2025-09-25T05:30:35.789Z"
+  },
+  {
+    "id": "1758862391445",
+    "username": "khanglam1998hcm",
+    "email": "khanglam1998hcm@gmail.com",
+    "name": "Khang Lam",
+    "googleId": "102882927511947075069",
+    "picture": "https://lh3.googleusercontent.com/a/ACg8ocIUWxB5rdVb1kPNyq6A2lPo5BqT7bORmVdXw_k2rFGlz9pQULY=s96-c",
+    "password": null,
+    "createdAt": "2025-09-26T04:53:11.445Z"
+  },
+  {
+    "id": "1758862405481",
+    "username": "kalmdangg",
+    "email": "kalmdangg@gmail.com",
+    "name": "Khang Lam",
+    "googleId": "105521940582101535429",
+    "picture": "https://lh3.googleusercontent.com/a/ACg8ocIAfk-xeUeyErLLPxNAJ2mFuT9VazarZSOIg4-ngfUk7sXerg=s96-c",
+    "password": null,
+    "createdAt": "2025-09-26T04:53:25.481Z"
   }
 ]
