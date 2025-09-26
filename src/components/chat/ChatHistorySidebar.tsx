@@ -33,15 +33,32 @@ export const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
       try {
         const stored = localStorage.getItem('findeep-chat-history');
         const history: ChatHistoryItem[] = stored ? JSON.parse(stored) : [];
-        setChatHistoryList(history.sort((a, b) => b.timestamp - a.timestamp));
+        
+        // Deduplicate by ID to prevent duplicate entries
+        const uniqueHistory = history.reduce((acc, current) => {
+          const existing = acc.find(item => item.id === current.id);
+          if (!existing) {
+            acc.push(current);
+          } else if (current.timestamp > existing.timestamp) {
+            // Keep the newer version if same ID found
+            const index = acc.findIndex(item => item.id === current.id);
+            acc[index] = current;
+          }
+          return acc;
+        }, [] as ChatHistoryItem[]);
+        
+        setChatHistoryList(uniqueHistory.sort((a, b) => b.timestamp - a.timestamp));
       } catch (error) {
         console.error('Failed to load chat history:', error);
         setChatHistoryList([]);
       }
     };
 
-    loadChatHistory();
-  }, []);
+    // Load chat history when sidebar opens
+    if (isOpen) {
+      loadChatHistory();
+    }
+  }, [isOpen]);
 
 
   // Generate a title from messages
@@ -79,13 +96,6 @@ export const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
     }
   };
 
-  // Clear all history
-  const handleClearAll = () => {
-    if (window.confirm('Are you sure you want to clear all chat history?')) {
-      localStorage.removeItem('findeep-chat-history');
-      setChatHistoryList([]);
-    }
-  };
 
   // Filter chats based on search query
   const filteredHistory = chatHistoryList.filter(chat =>
@@ -93,17 +103,7 @@ export const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
   );
 
   return (
-    <>
-      {/* Backdrop - only on mobile */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={onClose}
-        />
-      )}
-
-      {/* Sidebar - Now integrated */}
-      <div className={`h-full bg-white flex flex-col transition-all duration-300 ease-in-out`}>
+    <div className={`h-full bg-white flex flex-col transition-all duration-300 ease-out overflow-hidden`}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">Chat History</h2>
@@ -202,19 +202,7 @@ export const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
           )}
         </div>
 
-        {/* Footer */}
-        {chatHistoryList.length > 0 && (
-          <div className="border-t border-gray-200 p-4">
-            <button
-              onClick={handleClearAll}
-              className="w-full text-sm text-gray-500 hover:text-red-500 transition-colors"
-            >
-              Clear all history
-            </button>
-          </div>
-        )}
-      </div>
-    </>
+    </div>
   );
 };
 

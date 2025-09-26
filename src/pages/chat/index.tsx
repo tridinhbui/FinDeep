@@ -77,6 +77,7 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
   const [isLoading, setIsLoading] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isTogglingHistory, setIsTogglingHistory] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | undefined>();
   const [viewerState, setViewerState] = useState<ViewerState>({
     openDocs: [],
@@ -119,10 +120,16 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
           let updatedHistory;
           
           if (existingIndex >= 0) {
+            // Update existing chat
             updatedHistory = [...history];
             updatedHistory[existingIndex] = newChat;
           } else {
-            updatedHistory = [newChat, ...history].slice(0, 20); // Keep only last 20
+            // Add new chat and deduplicate by ID
+            updatedHistory = [newChat, ...history]
+              .filter((chat, index, self) => 
+                self.findIndex(c => c.id === chat.id) === index
+              )
+              .slice(0, 20); // Keep only last 20
           }
 
           localStorage.setItem('findeep-chat-history', JSON.stringify(updatedHistory));
@@ -287,16 +294,29 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
   return (
     <div className="flex h-screen bg-white text-black">
       {/* Chat History Sidebar - Integrated */}
-      {isHistoryOpen && (
-        <>
-          {/* Mobile Backdrop */}
+      <>
+        {/* Mobile Backdrop - Only show when open and on mobile */}
+        {isHistoryOpen && (
           <div 
-            className="absolute inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden transition-opacity duration-300 ease-in-out"
             onClick={() => setIsHistoryOpen(false)}
           />
-          
-          {/* Sidebar */}
-          <div className="relative z-50 w-80 border-r border-gray-200 bg-gray-50 flex-shrink-0">
+        )}
+        
+        {/* Sidebar with smoother animation */}
+        <div className={`
+          relative overflow-hidden transition-all duration-300 ease-in-out
+          ${isHistoryOpen ? 'w-80 opacity-100' : 'w-0 opacity-0'}
+          flex-shrink-0
+        `}>
+          <div className={`
+            w-80 h-full border-r border-gray-200 bg-gray-50 
+            transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+            ${isHistoryOpen 
+              ? 'translate-x-0' 
+              : '-translate-x-full'
+            }
+          `}>
             <ChatHistorySidebar
               isOpen={isHistoryOpen}
               onClose={() => setIsHistoryOpen(false)}
@@ -305,8 +325,8 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
               onNewChat={handleNewChat}
             />
           </div>
-        </>
-      )}
+        </div>
+      </>
 
       {/* Chat Panel */}
       <div
@@ -319,8 +339,14 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
           <div className="flex items-center gap-3">
             {/* Hamburger menu button for history */}
             <button
-              onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              onClick={() => {
+                if (isTogglingHistory) return;
+                setIsTogglingHistory(true);
+                setIsHistoryOpen(!isHistoryOpen);
+                setTimeout(() => setIsTogglingHistory(false), 300);
+              }}
+              disabled={isTogglingHistory}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
               title="Chat History"
             >
               <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -345,15 +371,6 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
               <svg className="w-5 h-5 text-text dark:text-text-dark-secondary dark:text-text dark:text-text-dark-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
-            <button
-              onClick={handleClearChat}
-              className="p-3 rounded-xl bg-gray-100 border border-gray-300 dark:border-border dark:border-border-dark-dark hover:bg-gray-200 hover:border-accent dark:hover:border-accent-dark transition-all duration-300 shadow-sm"
-              title="Clear Chat & Files"
-            >
-              <svg className="w-5 h-5 text-text dark:text-text-dark-secondary dark:text-text dark:text-text-dark-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
             </button>
             <button
