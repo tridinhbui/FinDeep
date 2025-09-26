@@ -47,6 +47,19 @@ class ApiService {
       console.log(`- Has Valid Key: ${hasValidKey}`);
       console.log(`- OpenAI Key: ${this.openaiApiKey ? 'Set' : 'Not set'}`);
       console.log(`- Claude Key: ${this.claudeApiKey ? 'Set' : 'Not set'}`);
+      
+      // Check localStorage for user keys
+      if (request.userEmail) {
+        const userClaudeKey = localStorage.getItem(`findeep-claude-key-${request.userEmail}`);
+        const userOpenaiKey = localStorage.getItem(`findeep-openai-key-${request.userEmail}`);
+        console.log(`- User Claude Key: ${userClaudeKey ? 'Set' : 'Not set'}`);
+        console.log(`- User OpenAI Key: ${userOpenaiKey ? 'Set' : 'Not set'}`);
+        console.log(`- User Claude Key Value: ${userClaudeKey ? userClaudeKey.substring(0, 10) + '...' : 'none'}`);
+        console.log(`- User OpenAI Key Value: ${userOpenaiKey ? userOpenaiKey.substring(0, 10) + '...' : 'none'}`);
+        
+        // Check all localStorage keys for debugging
+        console.log(`- All localStorage keys:`, Object.keys(localStorage).filter(key => key.includes('findeep')));
+      }
     }
     
     if (!hasValidKey) {
@@ -82,23 +95,23 @@ class ApiService {
       
       if (this.aiProvider === 'claude') {
         // If user has a specific key, use it; otherwise fall back to global
-        if (userClaudeKey && userClaudeKey.trim()) {
+        if (userClaudeKey && userClaudeKey.trim() && userClaudeKey !== 'your-claude-api-key-here') {
           return true;
         }
-        return !!(this.claudeApiKey && this.claudeApiKey !== 'your-claude-api-key-here');
+        return !!(this.claudeApiKey && this.claudeApiKey !== 'your-claude-api-key-here' && this.claudeApiKey.trim());
       } else {
         // If user has a specific key, use it; otherwise fall back to global
-        if (userOpenaiKey && userOpenaiKey.trim()) {
+        if (userOpenaiKey && userOpenaiKey.trim() && userOpenaiKey !== 'your-openai-api-key-here') {
           return true;
         }
-        return !!(this.openaiApiKey && this.openaiApiKey !== 'your-openai-api-key-here');
+        return !!(this.openaiApiKey && this.openaiApiKey !== 'your-openai-api-key-here' && this.openaiApiKey.trim());
       }
     } else {
       // Fallback to global keys
       if (this.aiProvider === 'claude') {
-        return !!(this.claudeApiKey && this.claudeApiKey !== 'your-claude-api-key-here');
+        return !!(this.claudeApiKey && this.claudeApiKey !== 'your-claude-api-key-here' && this.claudeApiKey.trim());
       } else {
-        return !!(this.openaiApiKey && this.openaiApiKey !== 'your-openai-api-key-here');
+        return !!(this.openaiApiKey && this.openaiApiKey !== 'your-openai-api-key-here' && this.openaiApiKey.trim());
       }
     }
   }

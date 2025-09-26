@@ -145,13 +145,13 @@ export const ApiKeySettings: React.FC<ApiKeySettingsProps> = ({ user, onApiKeyUp
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-card-gradient border border-dark-border rounded-2xl shadow-modern-lg p-6 w-full max-w-md">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white border border-gray-300 rounded-lg shadow-lg p-6 w-full max-w-md">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-dark-text">API Key Settings</h3>
+          <h3 className="text-lg font-semibold text-gray-900">API Key Settings</h3>
           <button
             onClick={() => setIsVisible(false)}
-            className="text-dark-text-secondary hover:text-dark-text transition-colors"
+            className="text-gray-500 hover:text-gray-700 transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -189,7 +189,7 @@ export const ApiKeySettings: React.FC<ApiKeySettingsProps> = ({ user, onApiKeyUp
 
           {/* API Key Input */}
           <div>
-            <label className="block text-sm font-medium text-dark-text mb-2">
+            <label className="block text-sm font-medium text-gray-900 mb-2">
               {selectedProvider === 'claude' ? 'Claude' : 'OpenAI'} API Key
             </label>
             <input
@@ -203,7 +203,7 @@ export const ApiKeySettings: React.FC<ApiKeySettingsProps> = ({ user, onApiKeyUp
                 }
               }}
               placeholder={`Enter your ${selectedProvider} API key`}
-              className="w-full px-4 py-3 bg-dark-surface border border-dark-border rounded-xl focus:outline-none focus:border-accent focus:shadow-glow transition-all duration-300 text-dark-text placeholder-dark-text-muted"
+              className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 text-gray-900 placeholder-gray-500"
             />
           </div>
 
@@ -223,23 +223,23 @@ export const ApiKeySettings: React.FC<ApiKeySettingsProps> = ({ user, onApiKeyUp
             <button
               onClick={handleTestApiKey}
               disabled={isLoading}
-              className="flex-1 py-2 px-4 bg-dark-surface border border-dark-border rounded-xl hover:bg-dark-surface-hover transition-colors text-sm font-medium disabled:opacity-50"
+              className="flex-1 py-2 px-4 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium disabled:opacity-50 text-gray-700"
             >
               {isLoading ? 'Testing...' : 'Test Key'}
             </button>
             <button
               onClick={handleSaveApiKey}
               disabled={isLoading}
-              className="flex-1 py-2 px-4 bg-modern-gradient text-white rounded-xl hover:shadow-glow transition-all text-sm font-medium disabled:opacity-50"
+              className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Saving...' : 'Save Key'}
             </button>
           </div>
 
           {/* Help Text */}
-          <div className="text-xs text-dark-text-muted space-y-1">
-            <p>• Get Claude API key: <a href="https://console.anthropic.com/" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">console.anthropic.com</a></p>
-            <p>• Get OpenAI API key: <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">platform.openai.com</a></p>
+          <div className="text-xs text-gray-600 space-y-1">
+            <p>• Get Claude API key: <a href="https://console.anthropic.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">console.anthropic.com</a></p>
+            <p>• Get OpenAI API key: <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">platform.openai.com</a></p>
             <p>• Your API keys are stored locally and only used by you</p>
           </div>
         </div>

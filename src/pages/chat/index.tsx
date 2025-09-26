@@ -14,6 +14,7 @@ import { DocumentViewer } from "../../components/viewer/DocumentViewer";
 import { FileUpload } from "../../components/chat/FileUpload";
 import { SettingsPanel } from "../../components/settings/SettingsPanel";
 import { CompactThemeToggle } from "../../components/settings/ThemeToggle";
+import ChatHistorySidebar from "../../components/chat/ChatHistorySidebar";
 import {
   saveViewerState,
   generateTabId,
@@ -75,6 +76,8 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
   const [pendingAttachments, setPendingAttachments] = useState<Attachment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [currentChatId, setCurrentChatId] = useState<string | undefined>();
   const [viewerState, setViewerState] = useState<ViewerState>({
     openDocs: [],
     activeTabId: null,
@@ -93,6 +96,47 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
     });
     setIsViewerVisible(false);
   }, []);
+
+  // Auto-save chat to history when messages change (except for welcome message)
+  useEffect(() => {
+    if (messages.length > 1 && !messages.every(msg => msg.role === 'assistant')) {
+      const saveToHistory = async () => {
+        try {
+          const stored = localStorage.getItem('findeep-chat-history');
+          const history = stored ? JSON.parse(stored) : [];
+          
+          const chatTitle = messages.find(msg => msg.role === 'user' && msg.content)?.content || 'Untitled Chat';
+          const newChat = {
+            id: currentChatId || Date.now().toString(),
+            title: chatTitle.length > 30 ? chatTitle.substring(0, 30) + '...' : chatTitle,
+            messages: [...messages],
+            date: new Date().toLocaleDateString(),
+            timestamp: Date.now()
+          };
+
+          // Update existing chat or add new one
+          const existingIndex = history.findIndex((chat: any) => chat.id === currentChatId);
+          let updatedHistory;
+          
+          if (existingIndex >= 0) {
+            updatedHistory = [...history];
+            updatedHistory[existingIndex] = newChat;
+          } else {
+            updatedHistory = [newChat, ...history].slice(0, 20); // Keep only last 20
+          }
+
+          localStorage.setItem('findeep-chat-history', JSON.stringify(updatedHistory));
+          setCurrentChatId(newChat.id);
+        } catch (error) {
+          console.error('Failed to save chat to history:', error);
+        }
+      };
+
+      // Debounce saving to avoid too frequent saves
+      const timeoutId = setTimeout(saveToHistory, 2000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [messages, currentChatId]);
 
   // Save viewer state to session storage whenever it changes
   useEffect(() => {
@@ -223,19 +267,66 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
       activeTabId: null,
     });
     setIsViewerVisible(false);
+    setCurrentChatId(undefined);
     // Clear the viewer state from session storage
     clearViewerState();
   };
 
+  // Handle loading a chat from history
+  const handleLoadChat = (chatHistory: ChatMessage[]) => {
+    setMessages(chatHistory);
+    setCurrentChatId(Date.now().toString());
+  };
+
+  // Handle new chat
+  const handleNewChat = () => {
+    handleClearChat();
+    setCurrentChatId(undefined);
+  };
+
   return (
     <div className="flex h-screen bg-white text-black">
+      {/* Chat History Sidebar - Integrated */}
+      {isHistoryOpen && (
+        <>
+          {/* Mobile Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={() => setIsHistoryOpen(false)}
+          />
+          
+          {/* Sidebar */}
+          <div className="relative z-50 w-80 border-r border-gray-200 bg-gray-50 flex-shrink-0">
+            <ChatHistorySidebar
+              isOpen={isHistoryOpen}
+              onClose={() => setIsHistoryOpen(false)}
+              currentChatId={currentChatId}
+              onLoadChat={handleLoadChat}
+              onNewChat={handleNewChat}
+            />
+          </div>
+        </>
+      )}
+
       {/* Chat Panel */}
       <div
-        className={`flex flex-col ${isViewerVisible ? "w-1/2" : "w-full"} transition-all duration-300`}
+        className={`flex flex-col transition-all duration-300 ${
+          isViewerVisible ? (isHistoryOpen ? "flex-1" : "w-1/2") : (isHistoryOpen ? "flex-1" : "w-full")
+        }`}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border bg-white shadow-subtle">
           <div className="flex items-center gap-3">
+            {/* Hamburger menu button for history */}
+            <button
+              onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              title="Chat History"
+            >
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-elegant">
               <span className="text-white font-bold text-sm">F</span>
             </div>
@@ -463,6 +554,7 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
           />
         </div>
       )}
+
 
 
       {/* Settings Panel */}

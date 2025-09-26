@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { ApiKeySettings } from './ApiKeySettings';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -11,6 +12,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<'general' | 'account' | 'api'>('general');
+
+  const handleApiKeyUpdate = (provider: string, apiKey: string) => {
+    console.log(`API key updated for ${provider}:`, apiKey ? 'Set' : 'Not set');
+  };
 
   if (!isOpen) return null;
 
@@ -145,39 +150,14 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
               </div>
             )}
 
-            {activeTab === 'api' && (
+            {activeTab === 'api' && user && (
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold text-text">API Keys</h3>
                 
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-text mb-1">
-                      OpenAI API Key
-                    </label>
-                    <input
-                      type="password"
-                      placeholder="Enter your OpenAI API key"
-                      className="w-full px-3 py-2 border border-border rounded-lg bg-white text-text"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-text mb-1">
-                      Claude API Key
-                    </label>
-                    <input
-                      type="password"
-                      placeholder="Enter your Claude API key"
-                      className="w-full px-3 py-2 border border-border rounded-lg bg-white text-text"
-                    />
-                  </div>
-                </div>
-
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>Note:</strong> Your API keys are stored locally and never shared with our servers.
-                  </p>
-                </div>
+                <ApiKeySettings 
+                  user={user}
+                  onApiKeyUpdate={handleApiKeyUpdate}
+                />
               </div>
             )}
           </div>
