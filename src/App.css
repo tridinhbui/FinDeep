@@ -2,145 +2,89 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    /* Light theme variables - default */
-    --color-bg: #ffffff;
-    --color-text: #000000;
-    --color-text-secondary: #6b7280;
-    --color-text-muted: #9ca3af;
-    --color-surface: #ffffff;
-    --color-surface-hover: #f8f9fa;
-    --color-border: #e5e7eb;
-    --color-scrollbar-track: #f1f3f4;
-    --color-scrollbar-thumb: #000000;
-    --color-scrollbar-thumb-hover: #1a1a1a;
-  }
-
-  .dark {
-    /* Dark theme variables - only when dark class is applied */
-    --color-bg: #000000;
-    --color-text: #ffffff;
-    --color-text-secondary: #d1d5db;
-    --color-text-muted: #9ca3af;
-    --color-surface: #111111;
-    --color-surface-hover: #1a1a1a;
-    --color-border: #374151;
-    --color-scrollbar-track: #1f2937;
-    --color-scrollbar-thumb: #ffffff;
-    --color-scrollbar-thumb-hover: #f3f4f6;
-  }
-
-  * {
-    box-sizing: border-box;
-  }
-
-  html,
-  body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    font-family:
-      -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-      "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-      sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background: var(--color-bg);
-    color: var(--color-text);
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-
-  #root {
-    height: 100%;
-    background: var(--color-bg);
-    transition: background-color 0.3s ease;
-  }
-
-  /* Modern scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: var(--color-scrollbar-track);
-    border-radius: 3px;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: var(--color-scrollbar-thumb);
-    border-radius: 3px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-scrollbar-thumb-hover);
-  }
-}
+/* App-specific styles - theme styles are now in theme.css */
 
 @layer components {
   .prose {
-    @apply text-text;
+    color: var(--color-text);
   }
 
   .prose h1 {
-    @apply text-2xl font-bold mb-4 text-text;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: var(--color-text);
   }
 
   .prose h2 {
-    @apply text-xl font-semibold mb-3 text-text;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--color-text);
   }
 
   .prose h3 {
-    @apply text-lg font-semibold mb-2 text-text;
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--color-text);
   }
 
   .prose p {
-    @apply mb-3 text-text-secondary leading-relaxed;
+    margin-bottom: 0.75rem;
+    color: var(--color-text-secondary);
+    line-height: 1.625;
   }
 
   .prose strong {
-    @apply font-semibold text-text;
+    font-weight: 600;
+    color: var(--color-text);
   }
 
   .prose em {
-    @apply italic text-text-secondary;
+    font-style: italic;
+    color: var(--color-text-secondary);
   }
 
   .prose ul,
   .prose ol {
-    @apply mb-3 pl-6;
+    margin-bottom: 0.75rem;
+    padding-left: 1.5rem;
   }
 
   .prose li {
-    @apply mb-1 text-text-secondary;
+    margin-bottom: 0.25rem;
+    color: var(--color-text-secondary);
   }
 
   .prose code {
-    @apply bg-secondary-light px-2 py-1 rounded text-sm font-mono text-text;
+    background: var(--color-bg-secondary);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-family: monospace;
+    color: var(--color-text);
   }
 
   .prose pre {
-    @apply bg-secondary-light p-4 rounded-lg overflow-x-auto text-sm font-mono text-text-secondary;
+    background: var(--color-bg-secondary);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    font-size: 0.875rem;
+    font-family: monospace;
+    color: var(--color-text-secondary);
   }
 
   .prose blockquote {
-    @apply border-l-4 border-accent pl-4 italic text-text-secondary;
+    border-left: 4px solid var(--color-accent);
+    padding-left: 1rem;
+    font-style: italic;
+    color: var(--color-text-secondary);
   }
 }
 
-/* Modern clean effects */
-.glass {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.dark .glass {
-  background: rgba(0, 0, 0, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
+/* Modern clean effects - glass effect now uses theme tokens */
 
 /* Enhanced animations */
 @keyframes float {
@@ -209,53 +153,9 @@
   left: 100%;
 }
 
-/* Focus styles for accessibility */
-button:focus-visible,
-input:focus-visible {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
+/* Focus styles now handled by theme.css */
 
-/* Ensure input text is always visible */
-input[type="text"],
-input[type="email"],
-input[type="password"] {
-  color: #000000 !important;
-}
+/* Input and button styles now handled by theme.css */
 
-input[type="text"]::placeholder,
-input[type="email"]::placeholder,
-input[type="password"]::placeholder {
-  color: #9ca3af !important;
-}
+/* Responsive design - moved to theme.css */
 
-/* Ensure button text is always visible - only for specific button types */
-button:not([class*="bg-primary"]):not([class*="text-white"]) {
-  color: #000000 !important;
-}
-
-/* Theme transition utilities */
-.theme-transition {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
-
-.theme-transition-all {
-  transition: all 0.3s ease;
-}
-
-/* Responsive design */
-@media (max-width: 1024px) {
-  .chat-panel {
-    width: 100% !important;
-  }
-
-  .viewer-panel {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 50;
-    background: var(--color-bg);
-  }
-}

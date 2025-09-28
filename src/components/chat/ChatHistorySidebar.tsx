@@ -62,15 +62,15 @@ export const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
 
 
   // Generate a title from messages
-  const generateChatTitle = (messages: ChatMessage[]): string => {
-    const userMessages = messages.filter(msg => msg.role === 'user' && msg.content);
-    if (userMessages.length === 0) return 'New Chat';
-    
-    const firstUserMessage = userMessages[0].content || '';
-    return firstUserMessage.length > 30 
-      ? firstUserMessage.substring(0, 30) + '...'
-      : firstUserMessage;
-  };
+  // const generateChatTitle = (messages: ChatMessage[]): string => {
+  //   const userMessages = messages.filter(msg => msg.role === 'user' && msg.content);
+  //   if (userMessages.length === 0) return 'New Chat';
+  //   
+  //   const firstUserMessage = userMessages[0].content || '';
+  //   return firstUserMessage.length > 30 
+  //     ? firstUserMessage.substring(0, 30) + '...' 
+  //     : firstUserMessage;
+  // };
 
   // Handle loading a chat
   const handleLoadChat = (chatHistory: ChatHistoryItem) => {

@@ -1,11 +1,12 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-type Theme = 'light' | 'dark';
+import React, { createContext, useContext, ReactNode } from 'react';
+import { useTheme as useThemeHook, Theme } from '../hooks/useTheme';
 
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
   setTheme: (theme: Theme) => void;
+  isDark: boolean;
+  isLight: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -15,46 +16,10 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    // Check localStorage first, then default to light mode
-    const savedTheme = localStorage.getItem('findeep-theme') as Theme;
-    if (savedTheme) {
-      return savedTheme;
-    }
-    
-    // Default to light mode (white background, black text)
-    return 'light';
-  });
-
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-    localStorage.setItem('findeep-theme', newTheme);
-    
-    // Update document class for global styling
-    const root = document.documentElement;
-    root.classList.remove('light', 'dark');
-    root.classList.add(newTheme);
-  };
-
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-  };
-
-  useEffect(() => {
-    // Apply theme on mount and when theme changes
-    const root = document.documentElement;
-    root.classList.remove('light', 'dark');
-    root.classList.add(theme);
-  }, [theme]);
-
-  const value: ThemeContextType = {
-    theme,
-    toggleTheme,
-    setTheme,
-  };
+  const themeHook = useThemeHook();
 
   return (
-    <ThemeContext.Provider value={value}>
+    <ThemeContext.Provider value={themeHook}>
       {children}
     </ThemeContext.Provider>
   );

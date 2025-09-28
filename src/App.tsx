@@ -5,6 +5,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { ChatWithPreview } from "./pages/chat";
 import { LoginPage } from "./pages/auth/LoginPage";
 import "./App.css";
+import "./styles/theme.css";
 
 // Demo user interface for backward compatibility
 interface DemoUser {
@@ -17,12 +18,12 @@ const AppRoutes: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-secondary dark:bg-secondary-dark flex items-center justify-center theme-transition">
+      <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center theme-transition">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary dark:bg-primary-dark flex items-center justify-center shadow-elegant dark:shadow-elegant-dark animate-pulse">
-            <span className="text-secondary dark:text-secondary-dark font-bold text-2xl">F</span>
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[var(--color-accent)] flex items-center justify-center shadow-[var(--shadow-elegant)] animate-pulse">
+            <span className="text-[var(--color-text-inverse)] font-bold text-2xl">F</span>
           </div>
-          <p className="text-text-secondary dark:text-text-secondary-dark theme-transition">Loading FinDeep...</p>
+          <p className="text-[var(--color-text-secondary)] theme-transition">Loading FinDeep...</p>
         </div>
       </div>
     );

@@ -292,13 +292,13 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
   };
 
   return (
-    <div className="flex h-screen bg-white text-black">
+    <div className="flex h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       {/* Chat History Sidebar - Integrated */}
       <>
         {/* Mobile Backdrop - Only show when open and on mobile */}
         {isHistoryOpen && (
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden transition-opacity duration-300 ease-in-out"
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 ease-in-out"
             onClick={() => setIsHistoryOpen(false)}
           />
         )}
@@ -310,7 +310,7 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
           flex-shrink-0
         `}>
           <div className={`
-            w-80 h-full border-r border-gray-200 bg-gray-50 
+            w-80 h-full border-r border-[var(--color-border)] bg-[var(--color-bg-secondary)] 
             transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
             ${isHistoryOpen 
               ? 'translate-x-0' 
@@ -335,7 +335,7 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border bg-white shadow-subtle">
+        <div className="flex items-center justify-between p-6 border-b border-[var(--color-border)] bg-[var(--color-bg)] shadow-[var(--shadow-sm)]">
           <div className="flex items-center gap-3">
             {/* Hamburger menu button for history */}
             <button
@@ -346,17 +346,17 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
                 setTimeout(() => setIsTogglingHistory(false), 300);
               }}
               disabled={isTogglingHistory}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
+              className="p-2 rounded-lg hover:bg-[var(--color-surface-hover)] transition-colors disabled:opacity-50"
               title="Chat History"
             >
-              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-[var(--color-text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-elegant">
-              <span className="text-white font-bold text-sm">F</span>
+            <div className="w-8 h-8 rounded-lg bg-[var(--color-accent)] flex items-center justify-center shadow-[var(--shadow-elegant)]">
+              <span className="text-[var(--color-text-inverse)] font-bold text-sm">F</span>
             </div>
-            <h1 className="text-xl font-bold text-black">
+            <h1 className="text-xl font-bold text-[var(--color-text)]">
               FinDeep
             </h1>
           </div>
@@ -365,21 +365,21 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
             <CompactThemeToggle />
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="p-3 rounded-xl bg-gray-100 border border-gray-300 dark:border-border dark:border-border-dark-dark hover:bg-gray-200 hover:border-accent dark:hover:border-accent-dark transition-all duration-300 shadow-sm"
+              className="p-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)] hover:border-[var(--color-accent)] transition-all duration-300 shadow-[var(--shadow-sm)]"
               title="Settings"
             >
-              <svg className="w-5 h-5 text-text dark:text-text-dark-secondary dark:text-text dark:text-text-dark-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-[var(--color-text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </button>
             <button
               onClick={() => setIsViewerVisible(!isViewerVisible)}
-              className="p-3 rounded-xl bg-gray-100 border border-gray-300 dark:border-border dark:border-border-dark-dark hover:bg-gray-200 hover:border-accent dark:hover:border-accent-dark transition-all duration-300 shadow-sm"
+              className="p-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)] hover:border-[var(--color-accent)] transition-all duration-300 shadow-[var(--shadow-sm)]"
               title={isViewerVisible ? "Hide viewer" : "Show viewer"}
             >
               <svg
-                className={`w-5 h-5 text-text dark:text-text-dark-secondary dark:text-text dark:text-text-dark-secondary-dark transition-transform duration-300 ${isViewerVisible ? "rotate-180" : ""}`}
+                className={`w-5 h-5 text-[var(--color-text-secondary)] transition-transform duration-300 ${isViewerVisible ? "rotate-180" : ""}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -395,27 +395,27 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
             
             {/* User Menu */}
             <div className="relative group">
-              <button className="flex items-center gap-2 p-2 rounded-xl bg-secondary-light border border-border dark:border-border-dark hover:bg-surface-hover transition-all duration-300 shadow-subtle">
-                <div className="w-8 h-8 rounded-full bg-primary dark:bg-primary-dark flex items-center justify-center">
-                  <span className="text-secondary dark:text-secondary-dark font-medium text-sm">
+              <button className="flex items-center gap-2 p-2 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)] transition-all duration-300 shadow-[var(--shadow-sm)]">
+                <div className="w-8 h-8 rounded-full bg-[var(--color-accent)] flex items-center justify-center">
+                  <span className="text-[var(--color-text-inverse)] font-medium text-sm">
                     {user.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
-                <span className="text-text dark:text-text-dark text-sm font-medium hidden sm:block">
+                <span className="text-[var(--color-text)] text-sm font-medium hidden sm:block">
                   {user.name}
                 </span>
-                <svg className="w-4 h-4 text-text dark:text-text-dark-secondary dark:text-text dark:text-text-dark-secondary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-[var(--color-text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
               
               {/* Dropdown Menu */}
-              <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-border dark:border-border-dark rounded-xl shadow-elegant opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="absolute right-0 top-full mt-2 w-48 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-[var(--shadow-elegant)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div className="p-2">
-                  <div className="px-3 py-2 text-sm text-text dark:text-text-dark border-b border-border dark:border-border-dark">
+                  <div className="px-3 py-2 text-sm text-[var(--color-text)] border-b border-[var(--color-border)]">
                     {user.email}
                     {!isAuthenticated && (
-                      <span className="ml-2 text-xs bg-secondary-light text-text dark:text-text-dark px-2 py-0.5 rounded-full border border-border dark:border-border-dark">
+                      <span className="ml-2 text-xs bg-[var(--color-bg-secondary)] text-[var(--color-text)] px-2 py-0.5 rounded-full border border-[var(--color-border)]">
                         Demo
                       </span>
                     )}
@@ -427,7 +427,7 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
                         localStorage.removeItem('findeep-demo-session');
                         navigate('/login');
                       }}
-                            className="w-full text-left px-3 py-2 text-sm text-text dark:text-text-dark hover:bg-surface-hover rounded-lg transition-colors flex items-center gap-2"
+                            className="w-full text-left px-3 py-2 text-sm text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] rounded-lg transition-colors flex items-center gap-2"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -438,7 +438,7 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
                     <>
                       <button
                         onClick={() => navigate('/profile')}
-                            className="w-full text-left px-3 py-2 text-sm text-text dark:text-text-dark hover:bg-surface-hover rounded-lg transition-colors flex items-center gap-2"
+                            className="w-full text-left px-3 py-2 text-sm text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] rounded-lg transition-colors flex items-center gap-2"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -452,7 +452,7 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
                           // Clear auth state after navigation
                           onLogout();
                         }}
-                            className="w-full text-left px-3 py-2 text-sm text-text dark:text-text-dark hover:bg-surface-hover rounded-lg transition-colors flex items-center gap-2"
+                            className="w-full text-left px-3 py-2 text-sm text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] rounded-lg transition-colors flex items-center gap-2"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -468,7 +468,7 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[var(--color-bg)]">
           {messages.map((message) => (
             <MessageItem
               key={message.id}
@@ -481,12 +481,12 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
 
         {/* Pending Attachments */}
         {pendingAttachments.length > 0 && (
-          <div className="px-6 py-3 border-t border-gray-300 bg-gray-50">
+          <div className="px-6 py-3 border-t border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs text-gray-600">Pending files:</span>
+              <span className="text-xs text-[var(--color-text-secondary)]">Pending files:</span>
               <button
                 onClick={() => setPendingAttachments([])}
-                className="text-xs text-black hover:text-gray-700 transition-colors"
+                className="text-xs text-[var(--color-text)] hover:text-[var(--color-text-secondary)] transition-colors"
               >
                 Clear all
               </button>
@@ -495,13 +495,13 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
               {pendingAttachments.map((attachment) => (
                 <div
                   key={attachment.id}
-                  className="flex items-center gap-2 px-3 py-1 bg-black/5 border border-black/20 rounded-lg text-xs"
+                  className="flex items-center gap-2 px-3 py-1 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg text-xs"
                 >
                   <span>{getAttachmentIcon(attachment.kind)}</span>
-                  <span className="text-black truncate max-w-32">{attachment.title}</span>
+                  <span className="text-[var(--color-text)] truncate max-w-32">{attachment.title}</span>
                   <button
                     onClick={() => setPendingAttachments(prev => prev.filter(a => a.id !== attachment.id))}
-                    className="text-black hover:text-gray-600 transition-colors"
+                    className="text-[var(--color-text)] hover:text-[var(--color-text-secondary)] transition-colors"
                   >
                     ×
                   </button>
@@ -512,7 +512,7 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
         )}
 
         {/* Input */}
-        <div className="p-6 border-t border-border dark:border-border-dark bg-white">
+        <div className="p-6 border-t border-[var(--color-border)] bg-[var(--color-bg)]">
           <form onSubmit={handleSendMessage} className="flex gap-3">
             <div className="flex-1 relative flex items-center">
               <input
@@ -520,7 +520,7 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Ask me anything about your financial data..."
-                className="flex-1 px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-black focus:ring-2 focus:ring-black/20 transition-all duration-300 text-black placeholder-gray-500"
+                className="flex-1 px-4 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all duration-300 text-[var(--color-text)] placeholder-[var(--color-text-muted)]"
                 disabled={isLoading}
               />
               <div className="relative">
@@ -530,11 +530,11 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
             <button
               type="submit"
               disabled={(!inputValue.trim() && pendingAttachments.length === 0) || isLoading}
-              className="px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-medium flex items-center gap-2 shadow-lg"
+              className="px-6 py-3 bg-[var(--color-accent)] text-[var(--color-text-inverse)] rounded-xl hover:bg-[var(--color-accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-medium flex items-center gap-2 shadow-[var(--shadow-lg)]"
             >
               {isLoading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-[var(--color-text-inverse)]/30 border-t-[var(--color-text-inverse)] rounded-full animate-spin" />
                   <span>Sending...</span>
                 </>
               ) : (
@@ -562,7 +562,7 @@ export const ChatWithPreview: React.FC<ChatWithPreviewProps> = ({ user, onLogout
 
       {/* Document Viewer Panel */}
       {isViewerVisible && (
-        <div className="w-1/2 border-l border-border dark:border-border-dark">
+        <div className="w-1/2 border-l border-[var(--color-border)]">
           <DocumentViewer
             openDocs={viewerState.openDocs}
             activeTabId={viewerState.activeTabId}

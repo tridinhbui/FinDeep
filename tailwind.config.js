@@ -62,5 +62,5 @@ module.exports = {
     },
   },
   plugins: [],
-  darkMode: 'class',
+  darkMode: ['class', '[data-theme="dark"]'],
 }
