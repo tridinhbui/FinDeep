@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { ApiKeySettings } from './ApiKeySettings';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -154,10 +153,22 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold text-text">Backend Settings</h3>
                 
-                <ApiKeySettings 
-                  user={user}
-                  onBackendUpdate={handleBackendUpdate}
-                />
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">
+                      FinDeep Backend URL
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="http://localhost:8001"
+                      className="w-full px-3 py-2 border border-border rounded-lg text-text"
+                      onChange={(e) => handleBackendUpdate(e.target.value)}
+                    />
+                    <p className="text-sm text-text-muted mt-1">
+                      Configure the URL for your FinDeep AI backend
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </div>
