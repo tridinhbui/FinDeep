@@ -1,5 +1,5 @@
 {
-  "name": "findeep-backend",
+  "name": "findeep_backend",
   "version": "1.0.0",
   "description": "FinDeep Backend API - Clean and Simple",
   "main": "server.js",

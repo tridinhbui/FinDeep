@@ -49,7 +49,7 @@ class ApiService {
     // This allows each user to configure their own FinDeep backend URL
     let backendUrl = this.finddeepBackendUrl;
     if (request.userEmail) {
-      const userBackendUrl = localStorage.getItem(`findeep-backend-url-${request.userEmail}`);
+      const userBackendUrl = localStorage.getItem(`findeep_backend-url-${request.userEmail}`);
       if (userBackendUrl) {
         backendUrl = userBackendUrl;  // Use user's custom backend URL
       }
