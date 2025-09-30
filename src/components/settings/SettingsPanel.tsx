@@ -13,8 +13,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<'general' | 'account' | 'api'>('general');
 
-  const handleApiKeyUpdate = (provider: string, apiKey: string) => {
-    console.log(`API key updated for ${provider}:`, apiKey ? 'Set' : 'Not set');
+  const handleBackendUpdate = (backendUrl: string) => {
+    console.log(`Backend URL updated:`, backendUrl);
   };
 
   if (!isOpen) return null;
@@ -67,7 +67,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
                     : 'text-text hover:bg-white'
                 }`}
               >
-                API Keys
+                Backend
               </button>
             </nav>
           </div>
@@ -152,11 +152,11 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
 
             {activeTab === 'api' && user && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-text">API Keys</h3>
+                <h3 className="text-lg font-semibold text-text">Backend Settings</h3>
                 
                 <ApiKeySettings 
                   user={user}
-                  onApiKeyUpdate={handleApiKeyUpdate}
+                  onBackendUpdate={handleBackendUpdate}
                 />
               </div>
             )}

@@ -1,11 +1,7 @@
 import { ChatMessage, Attachment } from '../types/chat';
 
 // Configuration
-const OPENAI_API_KEY = process.env.REACT_APP_OPENAI_API_KEY || '';
-const OPENAI_API_URL = process.env.REACT_APP_OPENAI_API_URL || 'https://api.openai.com/v1';
-const CLAUDE_API_KEY = process.env.REACT_APP_CLAUDE_API_KEY || '';
-const CLAUDE_API_URL = process.env.REACT_APP_CLAUDE_API_URL || 'https://api.anthropic.com/v1';
-const AI_PROVIDER = process.env.REACT_APP_AI_PROVIDER || 'claude'; // 'openai' or 'claude'
+const FINDDEEP_BACKEND_URL = process.env.REACT_APP_FINDDEEP_BACKEND_URL || 'http://localhost:8001';
 const DEBUG_MODE = process.env.REACT_APP_DEBUG === 'true';
 
 export interface ApiResponse {
@@ -19,224 +15,98 @@ export interface ApiRequest {
   attachments?: Attachment[];
   conversation_history?: ChatMessage[];
   userEmail?: string;
+  session_id?: string;
 }
 
 class ApiService {
-  private openaiApiKey: string;
-  private openaiApiUrl: string;
-  private claudeApiKey: string;
-  private claudeApiUrl: string;
-  private aiProvider: string;
+  private finddeepBackendUrl: string;
 
   constructor() {
-    this.openaiApiKey = OPENAI_API_KEY;
-    this.openaiApiUrl = OPENAI_API_URL;
-    this.claudeApiKey = CLAUDE_API_KEY;
-    this.claudeApiUrl = CLAUDE_API_URL;
-    this.aiProvider = AI_PROVIDER;
+    this.finddeepBackendUrl = FINDDEEP_BACKEND_URL;
+  }
+
+  // Generate a session ID for the user if not provided
+  private generateSessionId(userEmail?: string): string {
+    if (userEmail) {
+      // Use email-based session for consistency
+      return `session_${userEmail.replace('@', '_').replace('.', '_')}`;
+    }
+    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
   async sendMessage(request: ApiRequest): Promise<ApiResponse> {
-    // Check if we have a valid API key for the selected provider
-    const hasValidKey = this.hasValidApiKey(request.userEmail);
+    const sessionId = request.session_id || this.generateSessionId(request.userEmail);
+    
+    // Get user-specific backend URL or fallback to default
+    let backendUrl = this.finddeepBackendUrl;
+    if (request.userEmail) {
+      const userBackendUrl = localStorage.getItem(`findeep-backend-url-${request.userEmail}`);
+      if (userBackendUrl) {
+        backendUrl = userBackendUrl;
+      }
+    }
     
     if (DEBUG_MODE) {
-      console.log(`🔍 API Debug Info:`);
-      console.log(`- AI Provider: ${this.aiProvider}`);
+      console.log(`🔍 FinDeep Backend Debug Info:`);
+      console.log(`- Backend URL: ${backendUrl}`);
+      console.log(`- Session ID: ${sessionId}`);
       console.log(`- User Email: ${request.userEmail || 'none'}`);
-      console.log(`- Has Valid Key: ${hasValidKey}`);
-      console.log(`- OpenAI Key: ${this.openaiApiKey ? 'Set' : 'Not set'}`);
-      console.log(`- Claude Key: ${this.claudeApiKey ? 'Set' : 'Not set'}`);
-      
-      // Check localStorage for user keys
-      if (request.userEmail) {
-        const userClaudeKey = localStorage.getItem(`findeep-claude-key-${request.userEmail}`);
-        const userOpenaiKey = localStorage.getItem(`findeep-openai-key-${request.userEmail}`);
-        console.log(`- User Claude Key: ${userClaudeKey ? 'Set' : 'Not set'}`);
-        console.log(`- User OpenAI Key: ${userOpenaiKey ? 'Set' : 'Not set'}`);
-        console.log(`- User Claude Key Value: ${userClaudeKey ? userClaudeKey.substring(0, 10) + '...' : 'none'}`);
-        console.log(`- User OpenAI Key Value: ${userOpenaiKey ? userOpenaiKey.substring(0, 10) + '...' : 'none'}`);
-        
-        // Check all localStorage keys for debugging
-        console.log(`- All localStorage keys:`, Object.keys(localStorage).filter(key => key.includes('findeep')));
-      }
-    }
-    
-    if (!hasValidKey) {
-      if (DEBUG_MODE) {
-        console.log(`❌ No valid API key configured for ${this.aiProvider}, using demo mode`);
-      }
-      return this.getDemoResponse(request.message, request.attachments);
-    }
-    
-    if (DEBUG_MODE) {
-      console.log(`✅ Using real AI API: ${this.aiProvider.toUpperCase()}`);
+      console.log(`- Message: ${request.message}`);
     }
 
     try {
-      if (this.aiProvider === 'claude') {
-        return await this.sendClaudeMessage(request);
-      } else {
-        return await this.sendOpenAIMessage(request);
+      // Prepare message with context about attachments
+      let messageWithContext = request.message;
+      if (request.attachments && request.attachments.length > 0) {
+        const attachmentInfo = request.attachments.map(att => 
+          `[File: ${att.title} (${att.kind}) - ${att.preview || 'No preview available'}]`
+        ).join(' ');
+        
+        if (messageWithContext.trim()) {
+          messageWithContext += ` ${attachmentInfo}`;
+        } else {
+          messageWithContext = `Files attached: ${attachmentInfo}`;
+        }
       }
-    } catch (error) {
-      console.error(`${this.aiProvider.toUpperCase()} API Error:`, error);
+
+      const response = await fetch(`${backendUrl}/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+          message: messageWithContext
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`FinDeep Backend error: ${response.status} - ${errorData.detail || 'Unknown error'}`);
+      }
+
+      const data = await response.json();
       
-      // Fallback to demo response for development
+      if (DEBUG_MODE) {
+        console.log(`✅ FinDeep Backend Response:`, data);
+      }
+
+      return {
+        message: data.response,
+        attachments: this.generateAttachmentsFromResponse(data.response, request.attachments)
+      };
+
+    } catch (error) {
+      console.error('FinDeep Backend Error:', error);
+      
+      // Fallback to demo response if backend is not available
+      if (DEBUG_MODE) {
+        console.log(`❌ Backend unavailable, using demo mode`);
+      }
       return this.getDemoResponse(request.message, request.attachments);
     }
   }
 
-  private hasValidApiKey(userEmail?: string): boolean {
-    if (userEmail) {
-      // Check for user-specific API keys first
-      const userClaudeKey = localStorage.getItem(`findeep-claude-key-${userEmail}`);
-      const userOpenaiKey = localStorage.getItem(`findeep-openai-key-${userEmail}`);
-      
-      if (this.aiProvider === 'claude') {
-        // If user has a specific key, use it; otherwise fall back to global
-        if (userClaudeKey && userClaudeKey.trim() && userClaudeKey !== 'your-claude-api-key-here') {
-          return true;
-        }
-        return !!(this.claudeApiKey && this.claudeApiKey !== 'your-claude-api-key-here' && this.claudeApiKey.trim());
-      } else {
-        // If user has a specific key, use it; otherwise fall back to global
-        if (userOpenaiKey && userOpenaiKey.trim() && userOpenaiKey !== 'your-openai-api-key-here') {
-          return true;
-        }
-        return !!(this.openaiApiKey && this.openaiApiKey !== 'your-openai-api-key-here' && this.openaiApiKey.trim());
-      }
-    } else {
-      // Fallback to global keys
-      if (this.aiProvider === 'claude') {
-        return !!(this.claudeApiKey && this.claudeApiKey !== 'your-claude-api-key-here' && this.claudeApiKey.trim());
-      } else {
-        return !!(this.openaiApiKey && this.openaiApiKey !== 'your-openai-api-key-here' && this.openaiApiKey.trim());
-      }
-    }
-  }
-
-  // Convert our chat format to Claude format
-  private convertToClaudeFormat(request: ApiRequest): string {
-    const systemPrompt = `You are FinDeep, an AI financial analyst assistant. You help users analyze financial data, create reports, and provide insights. 
-
-You can:
-- Analyze financial documents and data
-- Create financial reports and summaries
-- Provide investment insights and recommendations
-- Help with budgeting and forecasting
-- Explain financial concepts and terms
-
-When users upload files, you can reference them in your analysis. Always provide clear, actionable financial insights.`;
-
-    let prompt = `${systemPrompt}\n\n`;
-
-    // Add conversation history
-    if (request.conversation_history) {
-      request.conversation_history.forEach(msg => {
-        prompt += `${msg.role === 'user' ? 'Human' : 'Assistant'}: ${msg.content}\n\n`;
-      });
-    }
-
-    // Add current message with context about attachments
-    let currentMessage = request.message;
-    if (request.attachments && request.attachments.length > 0) {
-      const attachmentInfo = request.attachments.map(att => 
-        `- ${att.title} (${att.kind}): ${att.preview || 'No preview available'}`
-      ).join('\n');
-      
-      if (currentMessage.trim()) {
-        currentMessage += `\n\nFiles attached:\n${attachmentInfo}`;
-      } else {
-        currentMessage = `Files attached:\n${attachmentInfo}`;
-      }
-    }
-
-    prompt += `Human: ${currentMessage}\n\nAssistant:`;
-
-    return prompt;
-  }
-
-  private async sendClaudeMessage(request: ApiRequest): Promise<ApiResponse> {
-    const prompt = this.convertToClaudeFormat(request);
-    
-    // Get user-specific API key or fallback to global
-    let apiKey = this.claudeApiKey;
-    if (request.userEmail) {
-      const userKey = localStorage.getItem(`findeep-claude-key-${request.userEmail}`);
-      if (userKey) apiKey = userKey;
-    }
-    
-    const response = await fetch(`${this.claudeApiUrl}/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-3-sonnet-20240229',
-        max_tokens: 2000,
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ]
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(`Claude API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
-    }
-
-    const data = await response.json();
-    const aiMessage = data.content[0]?.text || 'Sorry, I could not generate a response.';
-    
-    return {
-      message: aiMessage,
-      attachments: this.generateAttachmentsFromResponse(aiMessage, request.attachments)
-    };
-  }
-
-  private async sendOpenAIMessage(request: ApiRequest): Promise<ApiResponse> {
-    const messages = this.convertToOpenAIFormat(request);
-    
-    // Get user-specific API key or fallback to global
-    let apiKey = this.openaiApiKey;
-    if (request.userEmail) {
-      const userKey = localStorage.getItem(`findeep-openai-key-${request.userEmail}`);
-      if (userKey) apiKey = userKey;
-    }
-    
-    const response = await fetch(`${this.openaiApiUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: messages,
-        max_tokens: 2000,
-        temperature: 0.7,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(`OpenAI API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
-    }
-
-    const data = await response.json();
-    const aiMessage = data.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
-    
-    return {
-      message: aiMessage,
-      attachments: this.generateAttachmentsFromResponse(aiMessage, request.attachments)
-    };
-  }
 
   async uploadFile(file: File): Promise<{ url: string; id: string }> {
     // For now, we'll use local file URLs since we're focusing on OpenAI integration
@@ -256,54 +126,6 @@ When users upload files, you can reference them in your analysis. Always provide
     }
   }
 
-  // Convert our chat format to OpenAI format
-  private convertToOpenAIFormat(request: ApiRequest): any[] {
-    const systemPrompt = `You are FinDeep, an AI financial analyst assistant. You help users analyze financial data, create reports, and provide insights. 
-
-You can:
-- Analyze financial documents and data
-- Create financial reports and summaries
-- Provide investment insights and recommendations
-- Help with budgeting and forecasting
-- Explain financial concepts and terms
-
-When users upload files, you can reference them in your analysis. Always provide clear, actionable financial insights.`;
-
-    const messages = [
-      { role: 'system', content: systemPrompt }
-    ];
-
-    // Add conversation history
-    if (request.conversation_history) {
-      request.conversation_history.forEach(msg => {
-        messages.push({
-          role: msg.role,
-          content: msg.content || ""
-        });
-      });
-    }
-
-    // Add current message with context about attachments
-    let currentMessage = request.message;
-    if (request.attachments && request.attachments.length > 0) {
-      const attachmentInfo = request.attachments.map(att => 
-        `- ${att.title} (${att.kind}): ${att.preview || 'No preview available'}`
-      ).join('\n');
-      
-      if (currentMessage.trim()) {
-        currentMessage += `\n\nFiles attached:\n${attachmentInfo}`;
-      } else {
-        currentMessage = `Files attached:\n${attachmentInfo}`;
-      }
-    }
-
-    messages.push({
-      role: 'user',
-      content: currentMessage
-    });
-
-    return messages;
-  }
 
   // Generate relevant attachments based on AI response
   private generateAttachmentsFromResponse(aiMessage: string, userAttachments?: Attachment[]): Attachment[] {
@@ -377,14 +199,14 @@ When users upload files, you can reference them in your analysis. Always provide
     return attachments;
   }
 
-  // Demo responses for development/testing
+  // Demo responses for development/testing (when FinDeep backend is not available)
   private getDemoResponse(message: string, attachments?: Attachment[]): ApiResponse {
     const lowerMessage = message.toLowerCase();
     
     // Check for financial analysis requests
     if (lowerMessage.includes('analyze') || lowerMessage.includes('financial') || lowerMessage.includes('report')) {
       return {
-        message: `I've analyzed your request: "${message}". Here's what I found:\n\n**Key Insights:**\n- Revenue trends show positive growth\n- Operating margins are within target range\n- Cash flow remains stable\n\nI've prepared some supporting documents for your review.`,
+        message: `🔧 **Demo Mode** - FinDeep Backend not available\n\nI've analyzed your request: "${message}". Here's what I found:\n\n**Key Insights:**\n- Revenue trends show positive growth\n- Operating margins are within target range\n- Cash flow remains stable\n\n*Note: This is a demo response. Connect to the FinDeep backend for real financial analysis.*`,
         attachments: [
           {
             id: `demo-${Date.now()}-1`,
@@ -417,7 +239,7 @@ When users upload files, you can reference them in your analysis. Always provide
     // Check for budget/forecasting requests
     if (lowerMessage.includes('budget') || lowerMessage.includes('forecast') || lowerMessage.includes('planning')) {
       return {
-        message: `Based on your budget planning request, I've prepared a comprehensive analysis:\n\n**Budget Recommendations:**\n- Allocate 40% to operational expenses\n- Reserve 25% for growth initiatives\n- Maintain 15% emergency fund\n- Invest 20% in technology upgrades\n\nHere are the detailed planning documents:`,
+        message: `🔧 **Demo Mode** - FinDeep Backend not available\n\nBased on your budget planning request, I've prepared a comprehensive analysis:\n\n**Budget Recommendations:**\n- Allocate 40% to operational expenses\n- Reserve 25% for growth initiatives\n- Maintain 15% emergency fund\n- Invest 20% in technology upgrades\n\n*Note: This is a demo response. Connect to the FinDeep backend for real financial analysis.*`,
         attachments: [
           {
             id: `demo-${Date.now()}-3`,
@@ -465,7 +287,7 @@ This forecast model provides a 12-month projection based on current trends and m
     // Check for investment analysis
     if (lowerMessage.includes('investment') || lowerMessage.includes('roi') || lowerMessage.includes('return')) {
       return {
-        message: `I've analyzed your investment opportunities:\n\n**Investment Analysis:**\n- Technology upgrade: 18% ROI projected\n- Market expansion: 22% ROI projected\n- Process automation: 15% ROI projected\n\nHere's the detailed investment analysis:`,
+        message: `🔧 **Demo Mode** - FinDeep Backend not available\n\nI've analyzed your investment opportunities:\n\n**Investment Analysis:**\n- Technology upgrade: 18% ROI projected\n- Market expansion: 22% ROI projected\n- Process automation: 15% ROI projected\n\n*Note: This is a demo response. Connect to the FinDeep backend for real financial analysis.*`,
         attachments: [
           {
             id: `demo-${Date.now()}-5`,
@@ -481,7 +303,7 @@ This forecast model provides a 12-month projection based on current trends and m
 
     // Default response
     return {
-      message: `Thank you for your message: "${message}". I'm here to help with your financial analysis and planning needs. I can assist with:\n\n• Financial report analysis\n• Budget planning and forecasting\n• Investment opportunity evaluation\n• Risk assessment\n• Compliance monitoring\n\nPlease let me know what specific financial task you'd like help with!`,
+      message: `🔧 **Demo Mode** - FinDeep Backend not available\n\nThank you for your message: "${message}". I'm here to help with your financial analysis and planning needs. I can assist with:\n\n• Financial report analysis\n• Budget planning and forecasting\n• Investment opportunity evaluation\n• Risk assessment\n• Compliance monitoring\n\n*Note: This is a demo response. Connect to the FinDeep backend for real financial analysis.*`,
       attachments: attachments ? [
         {
           id: `demo-${Date.now()}-6`,

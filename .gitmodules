@@ -1,0 +1,3 @@
+[submodule "FinDeep-backend"]
+	path = FinDeep-backend
+	url = git@github.com:tanhoangkhoanguyen/FinDeep-backend.git
