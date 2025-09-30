@@ -1,26 +1,28 @@
 import React, { useState, useEffect } from 'react';
 
+// Interface for backend settings component props
 interface BackendSettingsProps {
-  user: { email: string; name: string };
-  onBackendUpdate: (backendUrl: string) => void;
+  user: { email: string; name: string };  // User information
+  onBackendUpdate: (backendUrl: string) => void;  // Callback when backend URL is updated
 }
 
+// Backend settings component - allows users to configure FinDeep backend URL
 export const ApiKeySettings: React.FC<BackendSettingsProps> = ({ user, onBackendUpdate }) => {
-  const [backendUrl, setBackendUrl] = useState('');
-  const [isVisible, setIsVisible] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [backendUrl, setBackendUrl] = useState('');  // Current backend URL input
+  const [isVisible, setIsVisible] = useState(false);  // Visibility toggle for settings panel
+  const [isLoading, setIsLoading] = useState(false);  // Loading state for async operations
+  const [message, setMessage] = useState('');  // Status message for user feedback
 
-  // Load saved backend URL on mount
+  // Load saved backend URL from localStorage when component mounts
   useEffect(() => {
     const savedBackendUrl = localStorage.getItem(`findeep-backend-url-${user.email}`);
     if (savedBackendUrl) {
-      setBackendUrl(savedBackendUrl);
+      setBackendUrl(savedBackendUrl);  // Use saved URL if available
     } else {
       // Default to the standard FinDeep backend URL
       setBackendUrl('http://localhost:8001');
     }
-  }, [user.email]);
+  }, [user.email]);  // Re-run when user email changes
 
   const handleSaveBackendUrl = async () => {
     setIsLoading(true);

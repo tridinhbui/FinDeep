@@ -1,51 +1,61 @@
+// Import TypeScript interfaces for type safety
 import { ChatMessage, Attachment } from '../types/chat';
 
-// Configuration
-const FINDDEEP_BACKEND_URL = process.env.REACT_APP_FINDDEEP_BACKEND_URL || 'http://localhost:8001';
-const DEBUG_MODE = process.env.REACT_APP_DEBUG === 'true';
+// Configuration constants for FinDeep backend integration
+const FINDDEEP_BACKEND_URL = process.env.REACT_APP_FINDDEEP_BACKEND_URL || 'http://localhost:8001';  // Default backend URL
+const DEBUG_MODE = process.env.REACT_APP_DEBUG === 'true';  // Enable debug logging
 
+// Response interface for API calls to FinDeep backend
 export interface ApiResponse {
-  message: string;
-  attachments?: Attachment[];
-  error?: string;
+  message: string;  // AI response message
+  attachments?: Attachment[];  // Optional file attachments
+  error?: string;  // Error message if request fails
 }
 
+// Request interface for sending messages to FinDeep backend
 export interface ApiRequest {
-  message: string;
-  attachments?: Attachment[];
-  conversation_history?: ChatMessage[];
-  userEmail?: string;
-  session_id?: string;
+  message: string;  // User's message/question
+  attachments?: Attachment[];  // Optional file attachments
+  conversation_history?: ChatMessage[];  // Previous conversation context
+  userEmail?: string;  // User's email for session management
+  session_id?: string;  // Optional session ID
 }
 
+// Main API service class for communicating with FinDeep backend
 class ApiService {
-  private finddeepBackendUrl: string;
+  private finddeepBackendUrl: string;  // Base URL for FinDeep backend
 
   constructor() {
+    // Initialize with default backend URL
     this.finddeepBackendUrl = FINDDEEP_BACKEND_URL;
   }
 
-  // Generate a session ID for the user if not provided
+  // Generate a unique session ID for tracking user conversations
   private generateSessionId(userEmail?: string): string {
     if (userEmail) {
-      // Use email-based session for consistency
+      // Use email-based session for consistency across user sessions
       return `session_${userEmail.replace('@', '_').replace('.', '_')}`;
     }
+    // Generate random session ID if no email provided
     return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
+  // Main method to send messages to FinDeep backend and get AI responses
   async sendMessage(request: ApiRequest): Promise<ApiResponse> {
+    // Generate or use provided session ID for conversation tracking
     const sessionId = request.session_id || this.generateSessionId(request.userEmail);
     
-    // Get user-specific backend URL or fallback to default
+    // Get user-specific backend URL from localStorage or fallback to default
+    // This allows each user to configure their own FinDeep backend URL
     let backendUrl = this.finddeepBackendUrl;
     if (request.userEmail) {
       const userBackendUrl = localStorage.getItem(`findeep-backend-url-${request.userEmail}`);
       if (userBackendUrl) {
-        backendUrl = userBackendUrl;
+        backendUrl = userBackendUrl;  // Use user's custom backend URL
       }
     }
     
+    // Debug logging for development and troubleshooting
     if (DEBUG_MODE) {
       console.log(`🔍 FinDeep Backend Debug Info:`);
       console.log(`- Backend URL: ${backendUrl}`);
@@ -55,48 +65,54 @@ class ApiService {
     }
 
     try {
-      // Prepare message with context about attachments
+      // Prepare message with context about any uploaded files
       let messageWithContext = request.message;
       if (request.attachments && request.attachments.length > 0) {
+        // Add file information to the message for AI context
         const attachmentInfo = request.attachments.map(att => 
           `[File: ${att.title} (${att.kind}) - ${att.preview || 'No preview available'}]`
         ).join(' ');
         
         if (messageWithContext.trim()) {
-          messageWithContext += ` ${attachmentInfo}`;
+          messageWithContext += ` ${attachmentInfo}`;  // Append file info to existing message
         } else {
-          messageWithContext = `Files attached: ${attachmentInfo}`;
+          messageWithContext = `Files attached: ${attachmentInfo}`;  // Create message from file info
         }
       }
 
+      // Make HTTP POST request to FinDeep backend /chat endpoint
       const response = await fetch(`${backendUrl}/chat`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json',  // JSON content type
         },
         body: JSON.stringify({
-          session_id: sessionId,
-          message: messageWithContext
+          session_id: sessionId,  // Include session ID for conversation tracking
+          message: messageWithContext  // Send message with file context
         }),
       });
 
+      // Check if the response is successful (status 200-299)
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(`FinDeep Backend error: ${response.status} - ${errorData.detail || 'Unknown error'}`);
       }
 
+      // Parse the JSON response from FinDeep backend
       const data = await response.json();
       
       if (DEBUG_MODE) {
         console.log(`✅ FinDeep Backend Response:`, data);
       }
 
+      // Return the AI response with any generated attachments
       return {
-        message: data.response,
+        message: data.response,  // AI's response message
         attachments: this.generateAttachmentsFromResponse(data.response, request.attachments)
       };
 
     } catch (error) {
+      // Handle any errors (network, backend down, etc.)
       console.error('FinDeep Backend Error:', error);
       
       // Fallback to demo response if backend is not available
